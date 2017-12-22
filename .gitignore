@@ -1,0 +1,11 @@
+*.png
+*.PNG
+*.crt
+*.key
+*.db3
+*bugfix*
+config.json
+node_modules
+/pub
+/image
+/dev
