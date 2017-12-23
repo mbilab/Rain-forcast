@@ -118,7 +118,7 @@ function receivedMessage(event) {
   const messageText = message.text;
   const messageAttachments = message.attachments;
   //find user status
-  get_senderStatus(senderID,(senderStatus)=>{
+  getSenderStatus(senderID,(senderStatus)=>{
     if ( senderStatus == -1){
       if (messageText) {
         switch (messageText) {
@@ -179,13 +179,13 @@ function receivedMessage(event) {
   })
 }
 //sqlite api(?
-function get_Users (callback){//get_Users((Users)=>{}) ; 
+function getUsers (callback){//getUsers((Users)=>{}) ; 
     db.all("SELECT * FROM users" ,(err,rows)=> callback(rows) )
 }
-function get_senderStatus(senderID,callback){
+function getSenderStatus(senderID,callback){
   var rowProcessed = 0 ;
   var senderStatus = -1 ;
-  get_Users((users)=>{
+  getUsers((users)=>{
     users.forEach((row,index,array)=>{
        if(row.user_id == senderID ){
          senderStatus = row.user_status;
@@ -208,9 +208,9 @@ function analyze(){
     if(stdout[0]=="T"){
       var output = stdout.split('@')
       var filename = output[ 1 ]
-      get_Users (( Users )=>{
+      getUsers (( Users )=>{
         Users.forEach(( User , index , array )=>{
-          get_senderStatus( User.user_id ,( senderStatus )=>{
+          getSenderStatus( User.user_id ,( senderStatus )=>{
             if( senderStatus ){
               sendTextMessage( User.user_id , stdout );
               sendTextMessage( User.user_id , config.imageHosting + filename );
@@ -233,9 +233,9 @@ function analyze(){
     if(stdout[0] == "T"){
       var output = stdout.split('@')
       var filename = output[ 1 ]
-      get_Users (( Users )=>{
+      getUsers (( Users )=>{
         Users.forEach(( User , index , array )=>{
-          get_senderStatus( User.user_id ,( senderStatus )=>{
+          getSenderStatus( User.user_id ,( senderStatus )=>{
             if( senderStatus ){
               sendTextMessage( User.user_id , stdout );
               sendTextMessage( User.user_id , "https://luffy.ee.ncku.edu.tw:20000/" + filename );
