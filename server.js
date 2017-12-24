@@ -1,5 +1,5 @@
 const bodyParser = require('body-parser')
-const date=require('date-and-time')
+const date = require('date-and-time')
 const { execFile } = require('child_process')
 const express = require('express')
 const fs = require('fs')
@@ -22,11 +22,12 @@ const options = {
 
 app.use(bodyParser.urlencoded({ extended: false }))
 app.use(bodyParser.json())
-//create server and pub dir
 app.use(express.static(__dirname+'/pub'))
-https.createServer(options, app).listen(config.port,()=>{
+
+https.createServer(options, app).listen(config.port, () => {
   console.log(`listen on port:${config.port}`)
 })
+
 // facebook api webhook
 app.get('/webhook', function(req, res) {
   if (req.query['hub.mode'] === 'subscribe' && req.query['hub.verify_token'] === config.webhookToken) {
@@ -37,6 +38,7 @@ app.get('/webhook', function(req, res) {
     res.sendStatus(403)
   }
 })
+
 app.post('/webhook', function (req, res) {
     // Make sure this is a page subscription
     if (req.body.object === 'page') {
@@ -72,6 +74,7 @@ function sendTextMessage(recipientId, messageText) {
     }
   })
 }
+
 function sendPhotoMessage(recipientId, photoUrl) {
   console.log(`${photoUrl}`)
   callSendAPI({
@@ -92,7 +95,7 @@ function sendPhotoMessage(recipientId, photoUrl) {
 function callSendAPI(messageData) {
   request({
     uri: 'https://graph.facebook.com/v2.6/me/messages',
-    qs: {access_token: config.pageToken },
+    qs: { access_token: config.pageToken },
     method: 'POST',
     json: messageData
   }, function (error, response, body) {
@@ -108,17 +111,14 @@ function callSendAPI(messageData) {
 //receive command and reply
 function receivedMessage(event) {
   const senderID = event.sender.id
-  const recipientID = event.recipient.id
-  const timeOfMessage = event.timestamp
-  const message = event.message
+  const { mid: messageId, text: messageText, attachments: messageAttachments } = event.message
 
-  console.log("Received message for user %d and page %d at %d with message:", senderID, recipientID, timeOfMessage)
-  console.log(JSON.stringify(message))
+  console.log("Received message for user %d and page %d at %d with message:", senderID, event.recipient.id, event.timestamp)
+  console.log(JSON.stringify(event.message))
 
-  const messageId = message.mid
-  const messageText = message.text
-  const messageAttachments = message.attachments
   //find user status
+  //! FIXME: Reduce the conditional branch
+  //! Hint: key-value mapping
   getSenderStatus(senderID,(senderStatus)=>{
     if ( senderStatus == -1){
       if (messageText) {
@@ -181,18 +181,19 @@ function receivedMessage(event) {
 }
 //sqlite api(?
 function getUsers (callback){//getUsers((Users)=>{}) ;
-    db.all("SELECT * FROM users" ,(err,rows)=> callback(rows) )
+    db.all("SELECT * FROM users" ,(err, rows) => callback(rows))
 }
-function getSenderStatus(senderID,callback){
+function getSenderStatus(senderID, callback){
   var rowProcessed = 0
   var senderStatus = -1
   getUsers((users)=>{
-    users.forEach((row,index,array)=>{
+    //! FIXME: Bad programming logit
+    users.forEach((row, index, array) => {
        if(row.user_id == senderID ){
          senderStatus = row.user_status
        }
        rowProcessed++
-       if ( rowProcessed === array.length ){
+       if (rowProcessed === array.length){
          callback(senderStatus)
        }
      })
@@ -201,21 +202,23 @@ function getSenderStatus(senderID,callback){
 
 
 function analyze(){
-  execFile('python', ['rain.py',date.format(date.addMinutes(time,-10),'YYYYMMDDHHmm').toString()+','+date.format(time,'YYYYMMDDHHmm').toString()+',1675,1475'], (error, stdout, stderr) => {
+  execFile('python', ['rain.py', date.format(date.addMinutes(time, -10), 'YYYYMMDDHHmm').toString() + ',' + date.format(time, 'YYYYMMDDHHmm').toString() + ',1675,1475'], (error, stdout, stderr) => {
     if (error) {
       throw error
     }
     console.log(stdout)
-    if(stdout[0]=="T"){
+    if(stdout[0] == "T"){
       var output = stdout.split('@')
-      var filename = output[ 1 ]
-      getUsers (( Users )=>{
-        Users.forEach(( User , index , array )=>{
-          getSenderStatus( User.user_id ,( senderStatus )=>{
-            if( senderStatus ){
-              sendTextMessage( User.user_id , stdout )
-              sendTextMessage( User.user_id , config.imageHosting + filename )
-              sendPhotoMessage(User.user_id , config.imageHosting + filename )
+      var filename = output[1]
+      //! FIXME: Reduce the indent of callback
+      //! Hint: Promise
+      getUsers (Users => {
+        Users.forEach((User, index, array) => {
+          getSenderStatus(User.user_id , senderStatus => {
+            if(senderStatus){
+              sendTextMessage(User.user_id, stdout)
+              sendTextMessage(User.user_id, config.imageHosting + filename)
+              sendPhotoMessage(User.user_id, config.imageHosting + filename)
             }
           })
         })
@@ -251,15 +254,15 @@ function analyze(){
 */
 
 ////////download radar
-let now=new Date()
-let minutes_offset=(-1)*parseInt(date.format(now,'mm'))%10
-let time=date.addMinutes(now,minutes_offset)
-time=date.addMinutes(time,-10)
+let now = new Date()
+let minutes_offset = (-1) * parseInt(date.format(now, 'mm')) % 10
+let time = date.addMinutes(now,minutes_offset)
+time = date.addMinutes(time, -10)
 
-setInterval(()=>{
-  const filename="image/CV1_3600_"+date.format(time,"YYYYMMDDHHmm").toString()+".png"
-  const url="http://www.cwb.gov.tw/V7/observe/radar/Data/HD_Radar/CV1_3600_"+date.format(time,'YYYYMMDDHHmm').toString()+".png"
-  console.log("downloading from:"+url)
+setInterval(() => {
+  const filename = `image/CV1_3600_${date.format(time, "YYYYMMDDHHmm").toString()}.png`
+  const url = `http://www.cwb.gov.tw/V7/observe/radar/Data/HD_Radar/CV1_3600_${date.format(time, 'YYYYMMDDHHmm').toString()}.png`
+  console.log(`downloading from: ${url}`)
   http.get(url, function(response) {
     if(response.statusCode != 200) {
       return console.log(`Download failed.statusCode:${response.statusCode}`)
@@ -269,6 +272,6 @@ setInterval(()=>{
       time = date.addMinutes(time,10)
     })
   })
-},60000)
+}, 60000)
 
 
