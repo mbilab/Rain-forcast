@@ -10,50 +10,45 @@ before_filename = "image/CV1_3600_" + info[0] + ".png"
 after_filename = "image/CV1_3600_" + info[1] + ".png"
 position_x = int(info[2])
 position_y = int(info[3])
+radius = 150
 
 def centroid(filename):
-    im = Image.open(filename)
-    nim = im.crop((position_x - 150, position_y - 150, position_x + 150, position_y + 150))
-    col, row = nim.size#xy
-    data = []#r,g,b,j,i
-    pixels = nim.load()
-    for i in range(col):
-        for j in range(row):# no black or white rgb(a,a,a)
-            if not(pixels[i, j][0] == pixels[i, j][1] and pixels[i, j][0] == pixels[i, j][2]):
-                data.append(pixels[i, j] + (i, j)) #pixels[x,y]  #data r,g,b,j,i
+    image = Image.open(filename).crop((position_x - radius, position_y - radius, position_x + radius, position_y + radius))
+    width, height = image.size#xy
+    pixels = image.load()
     count = 0
-    x_total = 0
-    y_total = 0
-    for i in range(len(data)):
-        if data[i][0] > 100:
+    x_pos = 0
+    y_pos = 0
+    for i in range(width):
+        for j in range(height):# no black or white rgb(a,a,a)
+            if (pixels[i, j][0] == pixels[i, j][1] and pixels[i, j][0] == pixels[i, j][2]) or pixels[i, j][0] <= 100:
+                continue
             count += 1
-            x_total += data[i][3]
-            y_total += data[i][4]
-    if count != 0:
-        x_position = x_total / count
-        y_position = y_total / count
-        return [x_position, y_position] #centroid return centroid
-    else:#if no rain  centroid false
-        return False
+            x_pos += i
+            y_pos += j
+    if count > 0:
+        x_pos /= count
+        y_pos /= count
+    return [x_pos, y_pos] #centroid return centroid
 
 
 #vector calculate
 after = centroid(after_filename)
 before = centroid(before_filename)
 #may no rain
-if after == False:
+if after[0] == 0:
     print False
     print ":no rain in image after.Weather turns well"
-elif before == False:#no rain at before image
+elif before[0] == 0:#no rain at before image
     im_a = Image.open(after_filename) #cloud growing at mid
     pixels_a = im_a.load()
     if pixels_a[position_x, position_y][0] > 100:
         #make image and draw
         im = Image.open(after_filename)
-        nim = im.crop((position_x - 150, position_y - 150, position_x + 150, position_y + 150))
+        nim = im.crop((position_x - radius, position_y - radius, position_x + radius, position_y + radius))
         draw = ImageDraw.Draw(nim)
         ###darw diamond shape
-        draw.polygon([(125, 150), (150, 125), (175, 150), (150, 175)], (255, 0, 0), (255, 0, 0))
+        draw.polygon([(radius - 25, radius), (radius, radius - 25), (radius + 25, radius), (radius, radius + 25)], (255, 0, 0), (255, 0, 0))
         del draw
         nim.save("pub/prediction_" + info[1] + ".png")
         print True
@@ -67,9 +62,9 @@ elif before == False:#no rain at before image
 else:
     vector = [after[0] - before[0], after[1] - before[1]]
     ###open image
-    center = [150, 150]
+    center = [radius, radius]
     im = Image.open(after_filename)
-    nim = im.crop((position_x - 150, position_y - 150, position_x + 150, position_y + 150))
+    nim = im.crop((position_x - radius, position_y - radius, position_x + radius, position_y + radius))
     pixels = nim.load()
     ###cloudy ?
     count_cloud = 0
@@ -104,19 +99,4 @@ else:
             print " Prediction saves as:pub/@prediction_" + info[1] + ".png@"
         else :
             print False
-"""
-  arrow=(location[0],location[1])
-  root=(location[0]-2*vector[0],location[1]-2*vector[1])
-  cen=[location[0]-2*vector[0]/4,location[1]-2*vector[1]/4]
-  cen1=(cen[0]+2*vector[1]/8,cen[1]-2*vector[0]/8)
-  cen2=(cen[0]-2*vector[1]/8,cen[1]+2*vector[0]/8)
-  arrow1=(cen[0]+2*vector[1]/4,cen[1]-2*vector[0]/4)
-  arrow2=(cen[0]-2*vector[1]/4,cen[1]+2*vector[0]/4)
-  ###draw
-  draw=ImageDraw.Draw(nim)
-  draw.polygon([arrow,arrow1,cen1,root,cen2,arrow2],(0,0,0),(0,0,0))
-  del draw
-  nim.save("image/prediction_"+info[1]+".png")
-  print " Prediction saves as:image/prediction_"+info[1]+".png"
-  """
 # vi:et:ts=4:sw=4
