@@ -12,27 +12,40 @@ def centroid(filename, position_x, position_y):
     count = 0
     x_pos = 0
     y_pos = 0
+
+    # calculate centroid
     for i in range(width):
-        for j in range(height): # no black or white rgb(a,a,a)
+        for j in range(height):
+
+            # ignore rgb(a,a,a) or which r < threshold
             if (pixels[i, j][0] == pixels[i, j][1] and pixels[i, j][0] == pixels[i, j][2]) or pixels[i, j][0] <= 100:
                 continue
+
             count += 1
             x_pos += i
             y_pos += j
+
     if count > 0:
         x_pos /= count
         y_pos /= count
-    return [x_pos, y_pos] #centroid return centroid
+
+    return [x_pos, y_pos]
 
 if __name__ == '__main__':
+
     parser = argparse.ArgumentParser()
+
+    # FIXME: Need a more detail description
     parser.add_argument("infom", help = "before,after,location (x,-y) ")
     args = parser.parse_args()
     info = args.infom.split(",")
 
-    #vector calculate
-    after = centroid("image/CV1_3600_" + info[0] + ".png", int(info[2]), int(info[3]))
-    before = centroid("image/CV1_3600_" + info[1] + ".png", int(info[2]), int(info[3]))
+    position_x = int(info[2])
+    position_y = int(info[3])
+
+
+    after = centroid("image/CV1_3600_" + info[0] + ".png", position_x, position_y)
+    before = centroid("image/CV1_3600_" + info[1] + ".png", position_x, position_y)
 
     #may no rain
     if after[0] == 0:
@@ -45,13 +58,21 @@ if __name__ == '__main__':
 
         if pixels_a[position_x, position_y][0] > 100:
             #make image and draw
-            im = Image.open(after_filename)
-            nim = im.crop((position_x - radius, position_y - radius, position_x + radius, position_y + radius))
+            nim = Image.open(after_filename).crop((position_x - radius, position_y - radius, position_x + radius, position_y + radius))
             draw = ImageDraw.Draw(nim)
 
             ###darw diamond shape
-            draw.polygon([(radius - 25, radius), (radius, radius - 25), (radius + 25, radius), (radius, radius + 25)], (255, 0, 0), (255, 0, 0))
-            del draw
+            draw.polygon( \
+                [ \
+                    (radius - 25, radius), \
+                    (radius, radius - 25), \
+                    (radius + 25, radius), \
+                    (radius, radius + 25) \
+                ], \
+                (255, 0, 0), \
+                (255, 0, 0) \
+            )
+
             nim.save("pub/prediction_" + info[1] + ".png")
             print True
             print ":rains are growing above just now"
