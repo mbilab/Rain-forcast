@@ -88,14 +88,13 @@ if __name__ == '__main__':
 
         ###open image
         center = [radius, radius]
-        im = Image.open(after_filename)
-        nim = im.crop((position_x - radius, position_y - radius, position_x + radius, position_y + radius))
+        nim = Image.open(after_filename).crop((position_x - radius, position_y - radius, position_x + radius, position_y + radius))
         pixels = nim.load()
 
         ###cloudy ?
         count_cloud = 0
-        for i in range(300):
-            for j in range(300):
+        for i in range(radius * 2):
+            for j in range(radius * 2):
                 if pixels[i, j][0] > 80 and not(pixels[i, j][0] == pixels[i, j][1] and pixels[i, j][0] == pixels[i, j][2]):
                     count_cloud += 1
 
@@ -106,7 +105,7 @@ if __name__ == '__main__':
             x = center[0] + 2 * vector[0]
             y = center[1] + 2 * vector[1]
 
-        ###Vector may out of range ,and it means rains are far away.\
+        ### Vector may out of range ,and it means rains are far away.
         if x > 0 and y > 0:
             if pixels[x, y][0] > 100 and not(pixels[x, y][0] == pixels[x, y][1] and pixels[x, y][0] == pixels[x, y][2]):
                 print True
@@ -124,7 +123,6 @@ if __name__ == '__main__':
                 ###draw
                 draw = ImageDraw.Draw(nim)
                 draw.polygon([arrow, arrow1, cen1, root, cen2, arrow2], (0, 0, 0), (0, 0, 0))
-                del draw
                 nim.save("pub/prediction_" + info[1] + ".png")
                 print " Prediction saves as:pub/@prediction_" + info[1] + ".png@"
 
