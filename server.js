@@ -7,10 +7,10 @@ const http = require('http')
 const https = require('https')
 const request = require('request')
 const config = require('./config')
-
+const reply = require('./reply.json')
 // db
 const sqlite3 = require('sqlite3').verbose()
-const db = new sqlite3.Database('weather.db3')
+const db = new sqlite3.Database('weather.db')
 
 const app = express()
 ////////////ssl certifacate//////////////
@@ -117,7 +117,7 @@ function receivedMessage(event) {
   console.log(JSON.stringify(event.message))
 
   //find user status
-  //! FIXME: Reduce the conditional branch
+  //! FIXME: Reduce the conditional branch(fixed)
   //! Hint: key-value mapping
   getSenderStatus(senderID,(senderStatus)=>{
     if ( senderStatus == -1){
@@ -125,7 +125,7 @@ function receivedMessage(event) {
         switch (messageText) {
           //user's command
           case '我要訂閱':
-            sendTextMessage(senderID, "以後將帶給您即時的天氣預報")
+            sendTextMessage(senderID, reply.status[0].subscr)
           //update status
             db.run("INSERT INTO users VALUES ( $user_id , $user_status )",{
               $user_id : senderID,
@@ -133,10 +133,10 @@ function receivedMessage(event) {
             })
             break
           default:
-            sendTextMessage(senderID, "Hi!請輸入'我要訂閱'，若成大要下雨時,便會通知您 ")
+            sendTextMessage(senderID, reply.status[0].default)
         }
       }else if (messageAttachments) {
-        sendTextMessage(senderID, "(隨機貼圖)")
+        sendTextMessage(senderID, reply.status[0].attachment)
       }
     }
     else if ( senderStatus == 0 ){
@@ -144,7 +144,7 @@ function receivedMessage(event) {
         switch (messageText) {
           //user's command
           case '我要訂閱':
-            sendTextMessage(senderID, "感謝乾爹再次訂閱，依然為乾爹提供最即時的降雨預報。")
+            sendTextMessage(senderID, reply.status[1].subscr)
             //update status
             db.run("UPDATE users SET user_status = $user_status WHERE user_id = $user_id", {
               $user_id : senderID,
@@ -152,10 +152,10 @@ function receivedMessage(event) {
             })
             break
           default:
-            sendTextMessage(senderID, "Hi!請輸入'我要訂閱'，若成大要下雨時,便會通知您 ")
+            sendTextMessage(senderID, reply.status[1].default)
         }
       }else if (messageAttachments) {
-        sendTextMessage(senderID, "(隨機貼圖)")
+        sendTextMessage(senderID, reply.status[1].attachment)
       }
     }
     else if(senderStatus == 1){
@@ -163,7 +163,7 @@ function receivedMessage(event) {
         switch (messageText) {
           //user's command
           case '取消訂閱':
-            sendTextMessage(senderID, "ＱＱ")
+            sendTextMessage(senderID, reply.status[2].subscr)
             //update status
             db.run("UPDATE users SET user_status = $user_status WHERE user_id = $user_id", {
                 $user_id  : senderID,
@@ -171,32 +171,31 @@ function receivedMessage(event) {
             })
             break
           default:
-            sendTextMessage(senderID, "安安～,～暫時不提供聊天服務喔！若要取消訂閱，請輸入'取消訂閱'。")
+            sendTextMessage(senderID, reply.status[2].default)
         }
       } else if (messageAttachments) {
-        sendTextMessage(senderID, "(隨機貼圖)")
+        sendTextMessage(senderID, reply.status[2].attachment)
       }
     }
   })
 }
 //sqlite api(?
 function getUsers (callback){//getUsers((Users)=>{}) ;
-    db.all("SELECT * FROM users" ,(err, rows) => callback(rows))
+  db.all("SELECT * FROM users" ,(err, rows) => callback(rows))
 }
 function getSenderStatus(senderID, callback){
-  var rowProcessed = 0
   var senderStatus = -1
   getUsers((users)=>{
-    //! FIXME: Bad programming logit
-    users.forEach((row, index, array) => {
-       if(row.user_id == senderID ){
-         senderStatus = row.user_status
-       }
-       rowProcessed++
-       if (rowProcessed === array.length){
-         callback(senderStatus)
-       }
-     })
+    //! FIXME: Baddd programming logit(fixed)
+    console.log(users.length)
+    for (let i = 0 ; i < users.length ; i++){
+      if(users[i].user_id == senderID ){
+        senderStatus = users[i].user_status
+      }
+      if( i == users.length - 1){
+        callback(senderStatus)
+      }
+    }
   })
 }
 
@@ -258,7 +257,7 @@ let now = new Date()
 let minutes_offset = (-1) * parseInt(date.format(now, 'mm')) % 10
 let time = date.addMinutes(now,minutes_offset)
 time = date.addMinutes(time, -10)
-
+/*
 setInterval(() => {
   const filename = `image/CV1_3600_${date.format(time, "YYYYMMDDHHmm").toString()}.png`
   const url = `http://www.cwb.gov.tw/V7/observe/radar/Data/HD_Radar/CV1_3600_${date.format(time, 'YYYYMMDDHHmm').toString()}.png`
@@ -273,5 +272,5 @@ setInterval(() => {
     })
   })
 }, 60000)
-
+*/
 
