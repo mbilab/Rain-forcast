@@ -119,7 +119,7 @@ function receivedMessage(event) {
   //find user status
   //! FIXME: Reduce the conditional branch(fixed)
   //! Hint: key-value mapping
-  getSenderStatus(senderID,(senderStatus)=>{
+  getSenderStatus(senderID).then((senderStatus)=>{
     if ( senderStatus == -1){
       if (messageText) {
         switch (messageText) {
@@ -180,25 +180,28 @@ function receivedMessage(event) {
   })
 }
 //sqlite api(?
-function getUsers (callback){//getUsers((Users)=>{}) ;
-  db.all("SELECT * FROM users" ,(err, rows) => callback(rows))
-}
-function getSenderStatus(senderID, callback){
-  var senderStatus = -1
-  getUsers((users)=>{
-    //! FIXME: Baddd programming logit(fixed)
-    console.log(users.length)
-    for (let i = 0 ; i < users.length ; i++){
-      if(users[i].user_id == senderID ){
-        senderStatus = users[i].user_status
-      }
-      if( i == users.length - 1){
-        callback(senderStatus)
-      }
-    }
+let getUsers =()=>{
+  return new Promise((resolve,reject)=>{
+    db.all("SELECT * FROM users" ,(err, rows) =>resolve(rows))
   })
 }
 
+let getSenderStatus = (senderID) => {
+  return new Promise((resolve,reject)=>{
+    var senderStatus = -1
+    getUsers().then( users => {
+      //! FIXME: Baddd programming logit(fixed)
+      for (let i = 0 ; i < users.length ; i++){
+        if(users[i].user_id == senderID ){
+          senderStatus = users[i].user_status
+        }
+        if( i == users.length - 1){
+          resolve(senderStatus)
+        }
+      }
+    })
+  })
+}
 
 function analyze(){
   execFile('python', ['rain.py', date.format(date.addMinutes(time, -10), 'YYYYMMDDHHmm').toString() + ',' + date.format(time, 'YYYYMMDDHHmm').toString() + ',1675,1475'], (error, stdout, stderr) => {
@@ -209,55 +212,30 @@ function analyze(){
     if(stdout[0] == "T"){
       var output = stdout.split('@')
       var filename = output[1]
-      //! FIXME: Reduce the indent of callback
+      //! FIXME: Reduce the indent of callback(fixed)
       //! Hint: Promise
-      getUsers (Users => {
-        Users.forEach((User, index, array) => {
-          getSenderStatus(User.user_id , senderStatus => {
-            if(senderStatus){
-              sendTextMessage(User.user_id, stdout)
-              sendTextMessage(User.user_id, config.imageHosting + filename)
-              sendPhotoMessage(User.user_id, config.imageHosting + filename)
+      getUsers().then((users)=>{ 
+        users.map((user)=>{
+          getSenderStatus(user.user_id)
+          .then( StatusCode => {
+            if(StatusCode==1){
+             sendTextMessage(user.user_id, stdout)
+             sendTextMessage(user.user_id, config.imageHosting + filename)
+             sendPhotoMessage(user.user_id, config.imageHosting + filename)
             }
-          })
+          }) 
         })
       })
     }
   })
 }
 
-/*
-function analyze(){
-  execFile('python', ['rain.py','10,11,1675,1475'], (error, stdout, stderr) => {
-    if (error) {
-      throw error;
-    }
-    console.log(stdout);
-    if(stdout[0] == "T"){
-      var output = stdout.split('@')
-      var filename = output[ 1 ]
-      getUsers (( Users )=>{
-        Users.forEach(( User , index , array )=>{
-          getSenderStatus( User.user_id ,( senderStatus )=>{
-            if( senderStatus ){
-              sendTextMessage( User.user_id , stdout );
-              sendTextMessage( User.user_id , "https://luffy.ee.ncku.edu.tw:20000/" + filename );
-              sendPhotoMessage(User.user_id , "https://luffy.ee.ncku.edu.tw:20000/" + filename );
-            }
-          })
-        })
-      })
-    }
-  });
-}
-*/
-
 ////////download radar
 let now = new Date()
 let minutes_offset = (-1) * parseInt(date.format(now, 'mm')) % 10
 let time = date.addMinutes(now,minutes_offset)
 time = date.addMinutes(time, -10)
-/*
+
 setInterval(() => {
   const filename = `image/CV1_3600_${date.format(time, "YYYYMMDDHHmm").toString()}.png`
   const url = `http://www.cwb.gov.tw/V7/observe/radar/Data/HD_Radar/CV1_3600_${date.format(time, 'YYYYMMDDHHmm').toString()}.png`
@@ -272,5 +250,4 @@ setInterval(() => {
     })
   })
 }, 60000)
-*/
 
