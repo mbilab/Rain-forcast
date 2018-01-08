@@ -35,17 +35,26 @@ if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
 
-    # FIXME: Need a more detail description
-    parser.add_argument("infom", help = "before,after,location (x,-y) ")
+    # FIXME: Need a more detail description(fixed)
+    parser.add_argument("infom", help = "\
+    Please keyin 4 parses as follow format, par1,par2,par3,par4.\
+    par1:datetime of before image(YYYYmmDDHHMM),\
+    par2:datetime of after image(YYYYmmDDHHMM),\
+    par3,par4:location (x,-y) on rader graph of CWB (NCKU is at 1675,1475) ")
     args = parser.parse_args()
     info = args.infom.split(",")
 
+    before_filename = "image/CV1_3600_" + info[0] + ".png"   
+    after_filename  = "image/CV1_3600_" + info[1] + ".png"   
     position_x = int(info[2])
     position_y = int(info[3])
 
 
-    after = centroid("image/CV1_3600_" + info[0] + ".png", position_x, position_y)
-    before = centroid("image/CV1_3600_" + info[1] + ".png", position_x, position_y)
+    
+    before  = centroid( before_filename, position_x, position_y)
+    after = centroid( after_filename, position_x, position_y)
+    print "centroid of before image:",before
+    print "centroid of after image :", after
 
     #may no rain
     if after[0] == 0:
