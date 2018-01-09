@@ -53,8 +53,6 @@ if __name__ == '__main__':
     
     before  = centroid( before_filename, position_x, position_y)
     after = centroid( after_filename, position_x, position_y)
-    print "centroid of before image:",before
-    print "centroid of after image :", after
 
     #may no rain
     if after[0] == 0:
@@ -86,11 +84,14 @@ if __name__ == '__main__':
             print True
             print ":rains are growing above just now"
             print "Prediction save as:@prediction_" + info[1] + ".png@"
-
+            print "centroid of before image:",before
+            print "centroid of after image :", after
         else:
             #make image and print rain
             print False
             print ":rains are growing nearby just now."
+            print "centroid of before image:",before
+            print "centroid of after image :", after
 
     else:
         vector = [after[0] - before[0], after[1] - before[1]]
@@ -119,6 +120,8 @@ if __name__ == '__main__':
             if pixels[x, y][0] > 100 and not(pixels[x, y][0] == pixels[x, y][1] and pixels[x, y][0] == pixels[x, y][2]):
                 print True
                 print ":rains are coming!"
+                print "centroid of before image:",before
+                print "centroid of after image :", after
 
                 #make image
                 arrow = (center[0], center[1])
@@ -137,4 +140,6 @@ if __name__ == '__main__':
 
             else :
                 print False
+                print "centroid of before image:",before
+                print "centroid of after image :", after
 # vi:et:ts=4:sw=4
