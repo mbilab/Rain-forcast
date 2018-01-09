@@ -115,7 +115,7 @@ if __name__ == '__main__':
             y = center[1] + 2 * vector[1]
 
         ### Vector may out of range ,and it means rains are far away.
-        if x > 0 and y > 0:
+        if 0 < x and x <300 and  y < 0 and y < 300:
             if pixels[x, y][0] > 100 and not(pixels[x, y][0] == pixels[x, y][1] and pixels[x, y][0] == pixels[x, y][2]):
                 print True
                 print ":rains are coming!"
