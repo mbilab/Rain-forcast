@@ -234,11 +234,23 @@ function analyze(){
 let now = new Date()
 let minutes_offset = (-1) * parseInt(date.format(now, 'mm')) % 10
 let time = date.addMinutes(now,minutes_offset)
-time = date.addMinutes(time, -10)
+time = date.addMinutes(time, -20)
+  
+let filename = `image/CV1_3600_${date.format(time, "YYYYMMDDHHmm").toString()}.png`
+let url = `http://www.cwb.gov.tw/V7/observe/radar/Data/HD_Radar/CV1_3600_${date.format(time, 'YYYYMMDDHHmm').toString()}.png`
+console.log(`firtdownloading from: ${url}`)
+http.get(url, function(response) {
+  if(response.statusCode != 200) {
+    return console.log(`Download failed.statusCode:${response.statusCode}`)
+  }
+  response.pipe(fs.createWriteStream(filename)).on('close', () => {
+    time = date.addMinutes(time,10)
+  })
+})
 
 setInterval(() => {
-  const filename = `image/CV1_3600_${date.format(time, "YYYYMMDDHHmm").toString()}.png`
-  const url = `http://www.cwb.gov.tw/V7/observe/radar/Data/HD_Radar/CV1_3600_${date.format(time, 'YYYYMMDDHHmm').toString()}.png`
+   filename = `image/CV1_3600_${date.format(time, "YYYYMMDDHHmm").toString()}.png`
+   url = `http://www.cwb.gov.tw/V7/observe/radar/Data/HD_Radar/CV1_3600_${date.format(time, 'YYYYMMDDHHmm').toString()}.png`
   console.log(`downloading from: ${url}`)
   http.get(url, function(response) {
     if(response.statusCode != 200) {
