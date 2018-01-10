@@ -1,7 +1,7 @@
 import Image
 import ImageDraw
 import argparse
-
+import math 
 # constant setup
 radius = 150
 
@@ -30,6 +30,20 @@ def centroid(filename, position_x, position_y):
         y_pos /= count
 
     return [x_pos, y_pos]
+
+def rain_area(pixels,x,y):##True: in distance<35 80% spot >100
+    area_radius =25
+    count =0
+    for i in range(300):
+        for j in range(300):
+            if math.sqrt( (x - i)**2 + (y - j)**2 ) < area_radius and pixels[i, j][0] > 100 \
+               and not(pixels[i, j][0] == pixels[i, j][1] and pixels[i, j][0] == pixels[i, j][2]):
+                count +=1
+    if count >0.6* math.pi* area_radius**2:
+        return True
+    else:
+        return False
+
 
 if __name__ == '__main__':
 
@@ -60,13 +74,11 @@ if __name__ == '__main__':
         print False
         print ":no rain in image after.Weather turns well"
 
-    elif before[0] == 0: #no rain at before image
-        im_a = Image.open(after_filename) #cloud growing at mid
-        pixels_a = im_a.load()
-
-        if pixels_a[position_x, position_y][0] > 100:
+    elif before[0] == 0: #no rain at before image #cloud growing at mid
+        nim = Image.open(after_filename).crop((position_x - radius, position_y - radius, position_x + radius, position_y + radius))
+        pixels = nim.load()
+        if rain_area(pixels,150,150):
             #make image and draw
-            nim = Image.open(after_filename).crop((position_x - radius, position_y - radius, position_x + radius, position_y + radius))
             draw = ImageDraw.Draw(nim)
 
             ###darw diamond shape
@@ -116,9 +128,9 @@ if __name__ == '__main__':
             x = center[0] + 2 * vector[0]
             y = center[1] + 2 * vector[1]
 
-        ### Vector may out of range ,and it means rains are far away.
-        if 0 < x and x <300 and  y < 0 and y < 300:
-            if pixels[x, y][0] > 100 and not(pixels[x, y][0] == pixels[x, y][1] and pixels[x, y][0] == pixels[x, y][2]):
+        ### Vector may out of range ,and it means rains are far away.  
+        if 0 <= x and x <300 and  0 <=  y and y < 300:
+            if  rain_area(pixels,x,y):
                 print True
                 print ":rains are coming!"
                 print "centroid of before image:",before
