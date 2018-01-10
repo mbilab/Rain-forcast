@@ -54,6 +54,7 @@ if __name__ == '__main__':
     before  = centroid( before_filename, position_x, position_y)
     after = centroid( after_filename, position_x, position_y)
 
+
     #may no rain
     if after[0] == 0:
         print False
@@ -142,4 +143,8 @@ if __name__ == '__main__':
                 print False
                 print "centroid of before image:",before
                 print "centroid of after image :", after
+        else:
+            print False
+            print "centroid of before image:",before
+            print "centroid of after image :", after
 # vi:et:ts=4:sw=4
