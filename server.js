@@ -108,6 +108,24 @@ function callSendAPI(messageData) {
     }
   })
 }
+
+function dispatchDBAction(id, status) {
+  switch (status) {
+    case -1:
+      db.run("INSERT INTO users VALUES ($user_id , $user_status )", { $user_id : id, $user_status : 1 })
+      break
+    case 0:
+      db.run("UPDATE users SET user_status = $user_status WHERE user_id = $user_id", { $user_id : id, $user_status : 1 })
+      break
+    case 1:
+      db.run("UPDATE users SET user_status = $user_status WHERE user_id = $user_id", { $user_id  : id, $user_status : 0 })
+      break
+    default:
+      throw new Error("Unknown sender status: " + status + ", sender id: " + id)
+  }
+
+}
+
 //receive command and reply
 function receivedMessage(event) {
   const senderID = event.sender.id
@@ -117,65 +135,18 @@ function receivedMessage(event) {
   console.log(JSON.stringify(event.message))
 
   //find user status
-  //! FIXME: Reduce the conditional branch(fixed)
-  //! Hint: key-value mapping
-  getSenderStatus(senderID).then((senderStatus)=>{
-    if ( senderStatus == -1){
-      if (messageText) {
-        switch (messageText) {
-          //user's command
-          case '我要訂閱':
-            sendTextMessage(senderID, reply.status[0].subscr)
-          //update status
-            db.run("INSERT INTO users VALUES ( $user_id , $user_status )",{
-              $user_id : senderID,
-              $user_status : 1 ,
-            })
-            break
-          default:
-            sendTextMessage(senderID, reply.status[0].default)
-        }
-      }else if (messageAttachments) {
-        sendTextMessage(senderID, reply.status[0].attachment)
+  getSenderStatus(senderID).then((senderStatus) => {
+
+    if (messageText) {
+      const text = reply[senderStatus].text.filter(el => el.q === messageText)
+      let response = reply[senderStatus].default
+      if (text.length) {
+        response = text[0].a
+        dispatchDBAction(senderID, senderStatus)
       }
-    }
-    else if ( senderStatus == 0 ){
-      if (messageText) {
-        switch (messageText) {
-          //user's command
-          case '我要訂閱':
-            sendTextMessage(senderID, reply.status[1].subscr)
-            //update status
-            db.run("UPDATE users SET user_status = $user_status WHERE user_id = $user_id", {
-              $user_id : senderID,
-              $user_status : 1 ,
-            })
-            break
-          default:
-            sendTextMessage(senderID, reply.status[1].default)
-        }
-      }else if (messageAttachments) {
-        sendTextMessage(senderID, reply.status[1].attachment)
-      }
-    }
-    else if(senderStatus == 1){
-      if (messageText) {
-        switch (messageText) {
-          //user's command
-          case '取消訂閱':
-            sendTextMessage(senderID, reply.status[2].subscr)
-            //update status
-            db.run("UPDATE users SET user_status = $user_status WHERE user_id = $user_id", {
-                $user_id  : senderID,
-                $user_status : 0  ,
-            })
-            break
-          default:
-            sendTextMessage(senderID, reply.status[2].default)
-        }
-      } else if (messageAttachments) {
-        sendTextMessage(senderID, reply.status[2].attachment)
-      }
+      sendTextMessage(senderID, response)
+    } else if (messageAttachments) {
+      sendTextMessage(senderID, "(隨機貼圖)")
     }
   })
 }
@@ -188,17 +159,13 @@ let getUsers =()=>{
 
 let getSenderStatus = (senderID) => {
   return new Promise((resolve,reject)=>{
-    var senderStatus = -1
     getUsers().then( users => {
-      //! FIXME: Baddd programming logit(fixed)
       for (let i = 0 ; i < users.length ; i++){
-        if(users[i].user_id == senderID ){
-          senderStatus = users[i].user_status
-        }
-        if( i == users.length - 1){
-          resolve(senderStatus)
+        if(users[i].user_id === senderID ){
+          resolve(users[i].user_status)
         }
       }
+      resolve(-1)
     })
   })
 }
@@ -212,9 +179,8 @@ function analyze(){
     if(stdout[0] == "T"){
       var output = stdout.split('@')
       var filename = output[1]
-      //! FIXME: Reduce the indent of callback(fixed)
-      //! Hint: Promise
-      getUsers().then((users)=>{ 
+      //! FIXME: Reduce the indent of callback
+      getUsers().then((users)=>{
         users.map((user)=>{
           getSenderStatus(user.user_id)
           .then( StatusCode => {
@@ -223,7 +189,7 @@ function analyze(){
              sendTextMessage(user.user_id, config.imageHosting + filename)
              sendPhotoMessage(user.user_id, config.imageHosting + filename)
             }
-          }) 
+          })
         })
       })
     }
