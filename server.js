@@ -151,46 +151,46 @@ function receivedMessage(event) {
   })
 }
 //sqlite api(?
-let getUsers =()=>{
-  return new Promise((resolve,reject)=>{
-    db.all("SELECT * FROM users" ,(err, rows) =>resolve(rows))
-  })
-}
+const getUsers = () => new Promise((resolve, reject) => {
+  db.all("SELECT * FROM users" ,(err, rows) => resolve(rows))
+})
 
-let getSenderStatus = (senderID) => {
-  return new Promise((resolve,reject)=>{
-    getUsers().then( users => {
-      for (let i = 0 ; i < users.length ; i++){
-        if(users[i].user_id === senderID ){
-          resolve(users[i].user_status)
-        }
-      }
-      resolve(-1)
-    })
+const getUser = (userID) => new Promise((resolve, reject) => {
+  db.all("SELECT * FROM users WHERE user_id = $user_id", { $user_id: userID } ,(err, rows) => {
+    if (rows.length == 1) {
+      resolve(rows[0])
+    }
+    else {
+      resolve()
+    }
   })
-}
+})
 
-function analyze(){
-  execFile('python', ['rain.py', date.format(date.addMinutes(time, -10), 'YYYYMMDDHHmm').toString() + ',' + date.format(time, 'YYYYMMDDHHmm').toString() + ',1675,1475'], (error, stdout, stderr) => {
+const getSubscribedUsers = () => new Promise((resolve, reject) => {
+  db.all("SELECT * FROM users WHERE user_status = 1" ,(err, rows) => resolve(rows))
+})
+
+const getSenderStatus = (senderID) => getUser(snderID).then(user => user ? user.user_status : -1)
+
+function analyze() {
+  execFile('python', [
+    'rain.py',
+    `${date.format(date.addMinutes(time, -10), 'YYYYMMDDHHmm').toString()},${date.format(time, 'YYYYMMDDHHmm').toString()},1675,1475`
+  ], (error, stdout, stderr) => {
     if (error) {
       throw error
     }
+
     console.log(stdout)
-    if(stdout[0] == "T"){
-      var output = stdout.split('@')
-      var filename = output[1]
-      //! FIXME: Reduce the indent of callback
-      getUsers().then((users)=>{
-        users.map((user)=>{
-          getSenderStatus(user.user_id)
-          .then( StatusCode => {
-            if(StatusCode==1){
-             sendTextMessage(user.user_id, stdout)
-             sendTextMessage(user.user_id, config.imageHosting + filename)
-             sendPhotoMessage(user.user_id, config.imageHosting + filename)
-            }
-          })
-        })
+    if (stdout[0] == "T") {
+      let output = stdout.split('@')
+      let filename = output[1]
+      getSubscribedUsers().then((users) => {
+        for (const user of users) {
+          sendTextMessage(user.user_id, stdout)
+          sendTextMessage(user.user_id, config.imageHosting + filename)
+          sendPhotoMessage(user.user_id, config.imageHosting + filename)
+        }
       })
     }
   })
@@ -201,7 +201,7 @@ let now = new Date()
 let minutes_offset = (-1) * parseInt(date.format(now, 'mm')) % 10
 let time = date.addMinutes(now,minutes_offset)
 time = date.addMinutes(time, -20)
-  
+
 let filename = `image/CV1_3600_${date.format(time, "YYYYMMDDHHmm").toString()}.png`
 let url = `http://www.cwb.gov.tw/V7/observe/radar/Data/HD_Radar/CV1_3600_${date.format(time, 'YYYYMMDDHHmm').toString()}.png`
 console.log(`firtdownloading from: ${url}`)
