@@ -3,7 +3,7 @@ Rain-forcast is a messenger  chatbot tells you when to rain.
 
 ## Setup
 * `cp config.json.example config.json` and write dwon your configuration.
-
+* `mkdir pub`,`mkdir image`and  build folders 
 * put your key & crt of ssl into ssl file
 
 ## Build
