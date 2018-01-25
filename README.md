@@ -1,17 +1,18 @@
 # Rain-forcast
 Rain-forcast is a messenger  chatbot tells you when to rain.
 
-##Setup
+## Setup
 `cp config.json.example config.json` and write dwon your configuration.
+* put your key & crt of ssl into ssl file
 
-##Build
-1.Create a facebook fan page
-Go to facebook for developer: https://developers.facebook.com/.
-2.Add a new messenger app.
-3.Create pageToken at Token Generation.
-4.Set webhookToken at Webhooks. 
-5.Select a page to subscribe your webhook to the page event.
+## Build
+* Create a facebook fan page
+ Go to facebook for developer: https://developers.facebook.com/.
+* Add a new messenger app.
+* Create pageToken at Token Generation.
+* et webhookToken at Webhooks. 
+* Select a page to subscribe your webhook to the page event.
 
-##Run
+## Run
 `node server.js`
 
