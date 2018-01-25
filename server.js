@@ -54,12 +54,6 @@ app.post('/webhook', function (req, res) {
           }
         })
       })
-
-      // Assume all went well.
-      //
-      // You must send back a 200, within 20 seconds, to let us know
-      // you've successfully received the callback. Otherwise, the request
-      // will time out and we will keep trying to resend.
       res.sendStatus(200)
     }
 })
@@ -74,8 +68,8 @@ function sendTextMessage(recipientId, messageText) {
     }
   })
 }
-
-function sendPhotoMessage(recipientId, photoUrl) {
+//sendTextMessage(1581646121915396,"Hi")
+function *sendPhotoMessage(recipientId, photoUrl) {
   console.log(`${photoUrl}`)
   callSendAPI({
     recipient: {
@@ -159,8 +153,7 @@ const getUser = (userID) => new Promise((resolve, reject) => {
   db.all("SELECT * FROM users WHERE user_id = $user_id", { $user_id: userID } ,(err, rows) => {
     if (rows.length == 1) {
       resolve(rows[0])
-    }
-    else {
+    } else {
       resolve()
     }
   })
@@ -170,7 +163,7 @@ const getSubscribedUsers = () => new Promise((resolve, reject) => {
   db.all("SELECT * FROM users WHERE user_status = 1" ,(err, rows) => resolve(rows))
 })
 
-const getSenderStatus = (senderID) => getUser(snderID).then(user => user ? user.user_status : -1)
+const getSenderStatus = (userID) => getUser(userID).then(user => user ? user.user_status : -1)
 
 function analyze() {
   execFile('python', [
@@ -228,4 +221,3 @@ setInterval(() => {
     })
   })
 }, 60000)
-

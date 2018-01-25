@@ -1,7 +1,6 @@
 *.png
 *.PNG
-*.crt
-*.key
+/ssl
 *.db*
 *bugfix*
 config.json
