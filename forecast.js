@@ -25,7 +25,7 @@ https.createServer(options, app).listen(config.port, () => {
 })
 
 function analyze() {
-  execFile('python', [
+  execFile('python3', [
     'rain.py',
     `${date.format(date.addMinutes(time, -10), 'YYYYMMDDHHmm').toString()},${date.format(time, 'YYYYMMDDHHmm').toString()},1675,1475`
   ], (error, stdout, stderr) => {
