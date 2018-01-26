@@ -40,22 +40,22 @@ app.get('/webhook', function(req, res) {
 })
 
 app.post('/webhook', function (req, res) {
-    // Make sure this is a page subscription
-    if (req.body.object === 'page') {
+  // Make sure this is a page subscription
+  if (req.body.object === 'page') {
 
-      // Iterate over each entry - there may be multiple if batched
-      req.body.entry.forEach(function(entry) {
-        // Iterate over each messaging event
-        entry.messaging.forEach(function(event) {
-          if (event.message) {
-            receivedMessage(event)
-          } else {
-            console.log("Webhook received unknown event: ", event)
-          }
-        })
+    // Iterate over each entry - there may be multiple if batched
+    req.body.entry.forEach(function(entry) {
+      // Iterate over each messaging event
+      entry.messaging.forEach(function(event) {
+        if (event.message) {
+          receivedMessage(event)
+        } else {
+          console.log("Webhook received unknown event: ", event)
+        }
       })
-      res.sendStatus(200)
-    }
+    })
+    res.sendStatus(200)
+  }
 })
 
 function sendTextMessage(recipientId, messageText) {
