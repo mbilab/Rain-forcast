@@ -1,6 +1,6 @@
 *.png
 *.PNG
-/ssl
+*.ttf
 *.db*
 *bugfix*
 config.json
@@ -8,3 +8,4 @@ node_modules
 /pub
 /image
 /dev
+/ssl

@@ -1,9 +1,11 @@
-import Image
-import ImageDraw
+from PIL import Image,ImageDraw,ImageFont
 import argparse
 import math 
 # constant setup
 radius = 150
+character_height = (53,86)
+character_position = (123,90)
+bg_color=(43, 62, 120)
 
 def is_grid_line_or_bg(px):
     return px[0] == px[1] and px[0] == px[2]
@@ -51,7 +53,6 @@ if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
 
-    # FIXME: Need a more detail description(fixed)
     parser.add_argument("infom", help =
         "Please keyin 4 parses as follow format, par1,par2,par3,par4."
         "par1:datetime of before image(YYYYmmDDHHMM),"
@@ -80,21 +81,20 @@ if __name__ == '__main__':
         pixels = nim.load()
         if rain_area(pixels,150,150):
             #make image and draw
-            draw = ImageDraw.Draw(nim)
 
-            ###darw diamond shape
-            draw.polygon( \
-                [ \
-                    (radius - 25, radius), \
-                    (radius, radius - 25), \
-                    (radius + 25, radius), \
-                    (radius, radius + 25) \
-                ], \
-                (255, 0, 0), \
-                (255, 0, 0) \
-            )
+            ###darw 
+            filename = "image/CV1_3600_201801271900.png"
+            character = "image/character.png"
+            arrow = "image/arrow.png"
+            base_im = Image.open(filename,'r').crop((position_x - radius, position_y - radius, position_x + radius, position_y + radius))
+            character_im = Image.open(character,'r').resize( character_height )
+            base_im.paste(character_im, character_position ,mask = character_im)
+            bg = Image.new( "RGB", (400,400) ,bg_color)
+            fnt = ImageFont.truetype('zh.ttf', 30)
+            ImageDraw.Draw( bg ).text( (30,335), "雲系發展中，要下雨了喔~", font=fnt )
+            bg.paste(base_im,(50,20))
+            bg.save("pub/prediction_" + info[1] + ".png", format = "png")
 
-            nim.save("pub/prediction_" + info[1] + ".png")
             print (True)
             print (":rains are growing above just now")
             print ("Prediction save as:@prediction_" + info[1] + ".png@")
