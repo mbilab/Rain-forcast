@@ -53,19 +53,16 @@ if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
 
-    parser.add_argument("infom", help =
-        "Please keyin 4 parses as follow format, par1,par2,par3,par4."
-        "par1:datetime of before image(YYYYmmDDHHMM),"
-        "par2:datetime of after image(YYYYmmDDHHMM),"
-        "par3,par4:location (x,-y) on rader graph of CWB (NCKU is at 1675,1475)"
-    )
+    parser.add_argument("info1", help ="info1:datetime of before image(YYYYmmDDHHMM),")
+    parser.add_argument("info2", help ="info2:datetime of after image(YYYYmmDDHHMM),")
+    parser.add_argument("info3", help ="info3:location x on rader graph of CWB (NCKU is at 1675,1475)")
+    parser.add_argument("info4", help ="info4:location -y on rader graph of CWB (NCKU is at 1675,1475)")
     args = parser.parse_args()
-    info = args.infom.split(",")
 
-    before_filename = "image/CV1_3600_" + info[0] + ".png"
-    after_filename  = "image/CV1_3600_" + info[1] + ".png"
-    position_x = int(info[2])
-    position_y = int(info[3])
+    before_filename = "image/CV1_3600_" + args.info1 + ".png"
+    after_filename  = "image/CV1_3600_" + args.info2 + ".png"
+    position_x = int(args.info3)
+    position_y = int(args.info4)
 
     before  = centroid( before_filename, position_x, position_y)
     after = centroid( after_filename, position_x, position_y)
@@ -93,11 +90,11 @@ if __name__ == '__main__':
             fnt = ImageFont.truetype('zh.ttf', 30)
             ImageDraw.Draw( bg ).text( (30,335), "雲系發展中，要下雨了喔~", font=fnt )
             bg.paste(base_im,(50,20))
-            bg.save("pub/prediction_" + info[1] + ".png", format = "png")
+            bg.save("pub/prediction_" + args.info2 + ".png", format = "png")
 
             print (True)
             print (":rains are growing above just now")
-            print ("Prediction save as:@prediction_" + info[1] + ".png@")
+            print ("Prediction save as:@prediction_" + args.info2 + ".png@")
             print ("centroid of before image:",before)
             print ("centroid of after image :", after)
         else:
@@ -149,8 +146,8 @@ if __name__ == '__main__':
                 ###draw
                 draw = ImageDraw.Draw(nim)
                 draw.polygon([arrow, arrow1, cen1, root, cen2, arrow2], (0, 0, 0), (0, 0, 0))
-                nim.save("pub/prediction_" + info[1] + ".png")
-                print (" Prediction saves as:pub/@prediction_" + info[1] + ".png@")
+                nim.save("pub/prediction_" + args.info2 + ".png")
+                print (" Prediction saves as:pub/@prediction_" + args.info2 + ".png@")
 
             else :
                 print (False)

@@ -167,8 +167,10 @@ const getSenderStatus = (userID) => getUser(userID).then(user => user ? user.use
 
 function analyze() {
   execFile('python3', [
-    'rain.py',
-    `${date.format(date.addMinutes(time, -10), 'YYYYMMDDHHmm').toString()},${date.format(time, 'YYYYMMDDHHmm').toString()},1675,1475`
+    `rain.py`,
+    `${date.format(date.addMinutes(time, -10), 'YYYYMMDDHHmm').toString()}`,
+    `${date.format(time, 'YYYYMMDDHHmm').toString()}`,
+    `1675`,`1475`
   ], (error, stdout, stderr) => {
     if (error) {
       throw error
