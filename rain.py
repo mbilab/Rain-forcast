@@ -140,6 +140,7 @@ if __name__ == '__main__':
             if  rain_area(pixels,x,y):
                 print (True)
                 print (":rains are coming!")
+                print ("Prediction save as:@prediction_" + args.info2 + ".png@")
                 print ("centroid of before image:",before)
                 print ("centroid of after image :", after)
 

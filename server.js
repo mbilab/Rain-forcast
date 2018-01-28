@@ -182,8 +182,6 @@ function analyze() {
       let filename = output[1]
       getSubscribedUsers().then((users) => {
         for (const user of users) {
-          sendTextMessage(user.user_id, stdout)
-          sendTextMessage(user.user_id, config.imageHosting + filename)
           sendPhotoMessage(user.user_id, config.imageHosting + filename)
         }
       })
