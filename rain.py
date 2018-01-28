@@ -3,9 +3,25 @@ import argparse
 import math 
 # constant setup
 radius = 150
-character_height = (53,86)
-character_position = (123,90)
-bg_color=(43, 62, 120)
+character_height = ( 53 , 86 )
+character_position = ( 123 , 90 )
+bg_color = ( 50 , 130 , 230 )
+character = "image/character.png"
+arrow = "image/arrow.png"
+
+def arrow_angle(vector):#正負部分為影像坐標與常用數學座標轉換
+    if vector[0]==0 :
+        if vector[1]>0:
+            return -math.pi / 2
+        else:
+            return math.pi / 2
+    elif vector[0] > 0 :
+        return math.atan( -vector[1]/vector[0] )
+    else:
+        return math.atan( -vector[1]/vector[0] ) + math.pi
+
+def arrow_positoin(angle):#修改時注意有座標轉換議題
+    return [ int( 150 - 100 * math.cos(angle) - 50 ),int( 150 + 100 * math.sin(angle) - 50 )]
 
 def is_grid_line_or_bg(px):
     return px[0] == px[1] and px[0] == px[2]
@@ -79,11 +95,8 @@ if __name__ == '__main__':
         if rain_area(pixels,150,150):
             #make image and draw
 
-            ###darw 
-            filename = "image/CV1_3600_201801271900.png"
-            character = "image/character.png"
-            arrow = "image/arrow.png"
-            base_im = Image.open(filename,'r').crop((position_x - radius, position_y - radius, position_x + radius, position_y + radius))
+            ###draw 
+            base_im = Image.open(after_filename,'r').crop((position_x - radius, position_y - radius, position_x + radius, position_y + radius))
             character_im = Image.open(character,'r').resize( character_height )
             base_im.paste(character_im, character_position ,mask = character_im)
             bg = Image.new( "RGB", (400,400) ,bg_color)
@@ -106,25 +119,21 @@ if __name__ == '__main__':
 
     else:
         vector = [after[0] - before[0], after[1] - before[1]]
-
-        ###open image
+        ###cloudy ?
         center = [radius, radius]
         nim = Image.open(after_filename).crop((position_x - radius, position_y - radius, position_x + radius, position_y + radius))
         pixels = nim.load()
-
-        ###cloudy ?
         count_cloud = 0
         for i in range(radius * 2):
             for j in range(radius * 2):
                 if pixels[i, j][0] > 80 and not(pixels[i, j][0] == pixels[i, j][1] and pixels[i, j][0] == pixels[i, j][2]):
                     count_cloud += 1
+        if count_cloud > 40000:
+            vector =[- vector[0],-vector[1]]
 
-        if count_cloud < 40000:
-            x = center[0] - 2 * vector[0]
-            y = center[1] - 2 * vector[1]
-        else:
-            x = center[0] + 2 * vector[0]
-            y = center[1] + 2 * vector[1]
+        ###find cloud
+        x = center[0] - 2 * vector[0]
+        y = center[1] - 2 * vector[1]
 
         ### Vector may out of range ,and it means rains are far away.
         if 0 <= x and x <300 and  0 <=  y and y < 300:
@@ -134,20 +143,18 @@ if __name__ == '__main__':
                 print ("centroid of before image:",before)
                 print ("centroid of after image :", after)
 
-                #make image
-                arrow = (center[0], center[1])
-                root = (center[0] - 2 * vector[0], center[1] - 2 * vector[1])
-                cen = [center[0] - 2 * vector[0] / 4, center[1] - 2 * vector[1] / 4]
-                cen1 = (cen[0] + 2 * vector[1] / 8, cen[1] - 2 * vector[0] / 8)
-                cen2 = (cen[0] - 2 * vector[1] / 8, cen[1] + 2 * vector[0] / 8)
-                arrow1 = (cen[0] + 2 * vector[1] / 4, cen[1] - 2 * vector[0] / 4)
-                arrow2 = (cen[0] - 2 * vector[1] / 4, cen[1] + 2 * vector[0] / 4)
-
-                ###draw
-                draw = ImageDraw.Draw(nim)
-                draw.polygon([arrow, arrow1, cen1, root, cen2, arrow2], (0, 0, 0), (0, 0, 0))
-                nim.save("pub/prediction_" + args.info2 + ".png")
-                print (" Prediction saves as:pub/@prediction_" + args.info2 + ".png@")
+                #draw
+                angle = arrow_angle(vector) 
+                fnt = ImageFont.truetype('zh.ttf', 30)
+                bg = Image.new( "RGB", (400,400) ,bg_color)
+                ImageDraw.Draw( bg ).text( (30,335), "雲飄來了，要下雨了喔~", font=fnt )
+                base_im = Image.open(after_filename,'r').crop((position_x - radius, position_y - radius, position_x + radius, position_y + radius))
+                character_im = Image.open(character,'r').resize( character_height )
+                arrow_im = Image.open(arrow,'r').resize((100,100) ).rotate(-90).rotate(math.degrees(angle))
+                base_im.paste(arrow_im, arrow_positoin(angle) , mask = arrow_im)
+                base_im.paste(character_im, character_position , mask = character_im)
+                bg.paste(base_im,(50,20))
+                bg.save("pub/prediction_" + args.info2 + ".png", format = "png")
 
             else :
                 print (False)
