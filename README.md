@@ -1,6 +1,10 @@
 # Rain-forcast
 Rain-forcast is a messenger  chatbot tells you when to rain.
 
+## Install Dependencies
+* `yarn`
+* `pip3 install -r requires.txt`
+
 ## Run Forecast without chatbot
 * `node forecast.js`
 
