@@ -49,15 +49,18 @@ def centroid(filename, position_x, position_y):
     if count > 0:
         x_pos /= count
         y_pos /= count
-
     return [x_pos, y_pos]
+
+def rain_dot(pixels,i,j):
+    if pixels[i,j][0]>150 or (pixels[i,j][0] <10 and pixels[i,j][1]<180 and pixels[i,j][2]<10 ):
+        return True
 
 def rain_area(pixels, x, y):##True: in distance<35 80% spot >100
     area_radius = 25
     count = 0
     for i in range(300):
         for j in range(300):
-            if math.sqrt((x - i) ** 2 + (y - j) ** 2) < area_radius and pixels[i, j][0] > 100 and not is_grid_line_or_bg(pixels[i, j]):
+            if math.sqrt((x - i) ** 2 + (y - j) ** 2) < area_radius and rain_dot(pixels,i,j) and not is_grid_line_or_bg(pixels[i, j]):
                 count += 1
     if count > 0.6 * math.pi * area_radius ** 2:
         return True
