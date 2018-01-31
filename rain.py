@@ -56,13 +56,13 @@ def rain_dot(pixels,i,j):
         return True
 
 def rain_area(pixels, x, y):##True: in distance<35 80% spot >100
-    area_radius = 25
+    area_radius = 20
     count = 0
     for i in range(300):
         for j in range(300):
             if math.sqrt((x - i) ** 2 + (y - j) ** 2) < area_radius and rain_dot(pixels,i,j) and not is_grid_line_or_bg(pixels[i, j]):
                 count += 1
-    if count > 0.6 * math.pi * area_radius ** 2:
+    if count > 0.5 * math.pi * area_radius ** 2:
         return True
     else:
         return False
