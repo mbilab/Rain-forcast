@@ -69,16 +69,16 @@ if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
 
-    parser.add_argument("info1", help ="info1:datetime of before image(YYYYmmDDHHMM),")
-    parser.add_argument("info2", help ="info2:datetime of after image(YYYYmmDDHHMM),")
-    parser.add_argument("info3", help ="info3:location x on rader graph of CWB (NCKU is at 1675,1475)")
-    parser.add_argument("info4", help ="info4:location -y on rader graph of CWB (NCKU is at 1675,1475)")
+    parser.add_argument("brgin", help ="info1:datetime of before image(YYYYmmDDHHMM),")
+    parser.add_argument("end", help ="info2:datetime of after image(YYYYmmDDHHMM),")
+    parser.add_argument("x", help ="info3:location x on rader graph of CWB (NCKU is at 1675,1475)")
+    parser.add_argument("y", help ="info4:location -y on rader graph of CWB (NCKU is at 1675,1475)")
     args = parser.parse_args()
 
-    before_filename = "image/CV1_3600_" + args.info1 + ".png"
-    after_filename  = "image/CV1_3600_" + args.info2 + ".png"
-    position_x = int(args.info3)
-    position_y = int(args.info4)
+    before_filename = "image/CV1_3600_" + args.brgin + ".png"
+    after_filename  = "image/CV1_3600_" + args.end + ".png"
+    position_x = int(args.x)
+    position_y = int(args.y)
 
     before  = centroid( before_filename, position_x, position_y)
     after = centroid( after_filename, position_x, position_y)
@@ -103,11 +103,11 @@ if __name__ == '__main__':
             fnt = ImageFont.truetype('zh.ttf', 30)
             ImageDraw.Draw( bg ).text( (30,335), "雲系發展中，要下雨了喔~", font=fnt )
             bg.paste(base_im,(50,20))
-            bg.save("pub/prediction_" + args.info2 + ".png", format = "png")
+            bg.save("pub/prediction_" + args.end + ".png", format = "png")
 
             print (True)
             print (":rains are growing above just now")
-            print ("Prediction save as:@prediction_" + args.info2 + ".png@")
+            print ("Prediction save as:@prediction_" + args.end + ".png@")
             print ("centroid of before image:",before)
             print ("centroid of after image :", after)
         else:
@@ -140,7 +140,7 @@ if __name__ == '__main__':
             if  rain_area(pixels,x,y):
                 print (True)
                 print (":rains are coming!")
-                print ("Prediction save as:@prediction_" + args.info2 + ".png@")
+                print ("Prediction save as:@prediction_" + args.end + ".png@")
                 print ("centroid of before image:",before)
                 print ("centroid of after image :", after)
 
@@ -155,7 +155,7 @@ if __name__ == '__main__':
                 base_im.paste(arrow_im, arrow_positoin(angle) , mask = arrow_im)
                 base_im.paste(character_im, character_position , mask = character_im)
                 bg.paste(base_im,(50,20))
-                bg.save("pub/prediction_" + args.info2 + ".png", format = "png")
+                bg.save("pub/prediction_" + args.end + ".png", format = "png")
 
             else :
                 print (False)
