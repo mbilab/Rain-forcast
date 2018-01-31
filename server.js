@@ -14,19 +14,29 @@ const db = new sqlite3.Database('weather.db')
 
 const app = express()
 ////////////ssl certifacate//////////////
-const options = {
-  ca : fs.readFileSync('./ssl/ca_bundle.crt'),
-  key: fs.readFileSync('./ssl/private.key'),
-  cert: fs.readFileSync('./ssl/certificate.crt')
+const ssl = () => { 
+  if(fs.existsSync(config.ssl.ca) && fs.existsSync(config.ssl.key) && fs.existsSync(config.ssl.cert)){ return true }
+}
+
+if(ssl()){
+  options = {
+    ca : fs.readFileSync(config.ssl.ca),
+    key: fs.readFileSync(config.ssl.key),
+    cert: fs.readFileSync(config.ssl.cert)
+  }
 }
 
 app.use(bodyParser.urlencoded({ extended: false }))
 app.use(bodyParser.json())
 app.use(express.static(__dirname+'/pub'))
 
-https.createServer(options, app).listen(config.port, () => {
-  console.log(`listen on port:${config.port}`)
-})
+if( ssl() ){
+  https.createServer(options, app).listen(config.port, () => {
+    console.log(`listen on port:${config.port}`)
+  })
+}else{ 
+  app.listen(config.port,() => console.log (`listen on port:${config.port} without ssl`) )
+}
 
 // facebook api webhook
 app.get('/webhook', function(req, res) {
@@ -130,7 +140,6 @@ function receivedMessage(event) {
 
   //find user status
   getSenderStatus(senderID).then((senderStatus) => {
-
     if (messageText) {
       const text = reply[senderStatus].text.filter(el => el.q === messageText)
       let response = reply[senderStatus].default
@@ -177,14 +186,16 @@ function analyze() {
     }
 
     console.log(stdout)
-    if (stdout[0] == "T") {
-      let output = stdout.split('@')
-      let filename = output[1]
-      getSubscribedUsers().then((users) => {
-        for (const user of users) {
-          sendPhotoMessage(user.user_id, config.imageHosting + filename)
-        }
-      })
+    if (ssl()){  
+      if (stdout[0] == "T") {
+        let output = stdout.split('@')
+        let filename = output[1]
+        getSubscribedUsers().then((users) => {
+          for (const user of users) {
+            sendPhotoMessage(user.user_id, config.imageHosting + filename)
+          }
+        })
+      }
     }
   })
 }
