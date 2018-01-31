@@ -1,6 +1,11 @@
 {
-  "port":8080,
-  "webhookToken":"<validation_token>",
-  "pageToken":"<page_access_token>",
-  "imageHosting":"loaclsite",
+  "port":20000,
+  "webhookToken":<yourToken>,
+  "pageToken":<yourToken>
+  "imageHosting":<localhost>,
+  "ssl":{
+    "ca"  :<yourCa_bundle>,
+    "key" :<yourPrivate>,
+    "cert":<yourCertificate>
+  }
 }
