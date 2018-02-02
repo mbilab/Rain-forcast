@@ -13,6 +13,8 @@ def arrow_angle(vector):#正負部分為影像坐標與常用數學座標轉換
     if vector[0]==0 :
         if vector[1]>0:
             return -math.pi / 2
+        elif vector[1]==0:
+            return -1
         else:
             return math.pi / 2
     elif vector[0] > 0 :
@@ -58,6 +60,8 @@ def rain_dot(pixels,i,j):
 def rain_area(pixels, x, y):##True: in distance<35 80% spot >100
     area_radius = 20
     count = 0
+    if 0 > x or x > 300 or  0 >  y or y > 301:
+        return False
     for i in range(300):
         for j in range(300):
             if math.sqrt((x - i) ** 2 + (y - j) ** 2) < area_radius and rain_dot(pixels,i,j) and not is_grid_line_or_bg(pixels[i, j]):
@@ -67,6 +71,19 @@ def rain_area(pixels, x, y):##True: in distance<35 80% spot >100
     else:
         return False
 
+def Vector(pixels,after,before):
+    if(before==[0,0]):
+        return before
+    else:
+        count_cloud = 0
+        for i in range(radius * 2):
+            for j in range(radius * 2):
+                if pixels[i, j][0] > 80 and not(pixels[i, j][0] == pixels[i, j][1] and pixels[i, j][0] == pixels[i, j][2]):
+                    count_cloud += 1
+        if count_cloud > 40000:
+            return [befor[0] - after[0], before[1] - after[1]]
+        else:
+            return [after[0] - before[0], after[1] - before[1]]
 
 if __name__ == '__main__':
 
@@ -89,82 +106,46 @@ if __name__ == '__main__':
 
     #may no rain
     if after[0] == 0:
-        print(False)
-        print(":no rain in image after.Weather turns well")
+        print(False) #no rain in image after
 
-    elif before[0] == 0: #no rain at before image #cloud growing at mid
-        nim = Image.open(after_filename).crop((position_x - radius, position_y - radius, position_x + radius, position_y + radius))
-        pixels = nim.load()
-        if rain_area(pixels,150,150):
-            #make image and draw
 
-            ###draw 
-            base_im = Image.open(after_filename,'r').crop((position_x - radius, position_y - radius, position_x + radius, position_y + radius))
-            character_im = Image.open(character,'r').resize( character_height )
-            base_im.paste(character_im, character_position ,mask = character_im)
-            bg = Image.new( "RGB", (400,400) ,bg_color)
-            fnt = ImageFont.truetype('zh.ttf', 30)
-            ImageDraw.Draw( bg ).text( (30,335), "雲系發展中，要下雨了喔~", font=fnt )
-            bg.paste(base_im,(50,20))
-            bg.save("pub/prediction_" + args.end + ".png", format = "png")
 
+    else:
+        base_im = Image.open(after_filename).crop((position_x - radius, position_y - radius, position_x + radius, position_y + radius))
+        pixels = base_im.load()
+
+        vector=Vector(pixels,after, before)
+        ###find cloud
+        x = radius - 2 * vector[0]
+        y = radius - 2 * vector[1]
+        print (x,y)
+
+        ### Vector may out of range ,and it means rains are far away.
+        if rain_area(pixels,x,y):
             print (True)
-            print (":rains are growing above just now")
+            print (":rains are coming!")
             print ("Prediction save as:@prediction_" + args.end + ".png@")
             print ("centroid of before image:",before)
             print ("centroid of after image :", after)
-        else:
-            #make image and print rain
-            print (False)
-            print (":rains are growing nearby just now.")
-            print ("centroid of before image:",before)
-            print ("centroid of after image :", after)
-
-    else:
-        vector = [after[0] - before[0], after[1] - before[1]]
-        ###cloudy ?
-        center = [radius, radius]
-        nim = Image.open(after_filename).crop((position_x - radius, position_y - radius, position_x + radius, position_y + radius))
-        pixels = nim.load()
-        count_cloud = 0
-        for i in range(radius * 2):
-            for j in range(radius * 2):
-                if pixels[i, j][0] > 80 and not(pixels[i, j][0] == pixels[i, j][1] and pixels[i, j][0] == pixels[i, j][2]):
-                    count_cloud += 1
-        if count_cloud > 40000:
-            vector =[- vector[0],-vector[1]]
-
-        ###find cloud
-        x = center[0] - 2 * vector[0]
-        y = center[1] - 2 * vector[1]
-
-        ### Vector may out of range ,and it means rains are far away.
-        if 0 <= x and x <300 and  0 <=  y and y < 300:
-            if  rain_area(pixels,x,y):
-                print (True)
-                print (":rains are coming!")
-                print ("Prediction save as:@prediction_" + args.end + ".png@")
-                print ("centroid of before image:",before)
-                print ("centroid of after image :", after)
-
-                #draw
-                angle = arrow_angle(vector) 
-                fnt = ImageFont.truetype('zh.ttf', 30)
-                bg = Image.new( "RGB", (400,400) ,bg_color)
+     
+            #draw
+            fnt = ImageFont.truetype('zh.ttf', 30)
+            bg = Image.new( "RGB", (400,400) ,bg_color)
+            character_im = Image.open(character).resize( character_height )
+            base_im.paste(character_im, character_position , mask = character_im)
+            angle = arrow_angle(vector) 
+            if angle>=0:
                 ImageDraw.Draw( bg ).text( (30,335), "雲飄來了，要下雨了喔~", font=fnt )
-                base_im = Image.open(after_filename,'r').crop((position_x - radius, position_y - radius, position_x + radius, position_y + radius))
-                character_im = Image.open(character,'r').resize( character_height )
-                arrow_im = Image.open(arrow,'r').resize((100,100) ).rotate(-90).rotate(math.degrees(angle))
+                arrow_im = Image.open(arrow).resize((100,100) ).rotate(-90).rotate(math.degrees(angle))
                 base_im.paste(arrow_im, arrow_positoin(angle) , mask = arrow_im)
-                base_im.paste(character_im, character_position , mask = character_im)
-                bg.paste(base_im,(50,20))
-                bg.save("pub/prediction_" + args.end + ".png", format = "png")
-
             else :
-                print (False)
-                print ("centroid of before image:",before)
-                print ("centroid of after image :", after)
-        else:
+                ###draw 
+                ImageDraw.Draw( bg ).text( (30,335), "雲系發展中，要下雨了喔~", font=fnt )
+            bg.paste(base_im,(50,20))
+            bg.save("pub/prediction_" + args.end + ".png", format = "png")
+     
+     
+        else :
             print (False)
             print ("centroid of before image:",before)
             print ("centroid of after image :", after)
