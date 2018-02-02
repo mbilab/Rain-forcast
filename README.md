@@ -28,4 +28,10 @@ Rain-forcast is a messenger  chatbot tells you when to rain.
 ### Run
 * `node server.js`
 
+## Test
 
+### Setup
+* setup testdata and modify config.json
+
+### Run
+* `python3 test.py YYYYMMDDHHmm YYYYMMDDHHmm x y`
