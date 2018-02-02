@@ -7,5 +7,6 @@
     "ca"  :<yourCa_bundle>,
     "key" :<yourPrivate>,
     "cert":<yourCertificate>
-  }
+  },
+  "path":<path for testdata>
 }

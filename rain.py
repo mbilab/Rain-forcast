@@ -1,6 +1,9 @@
 from PIL import Image,ImageDraw,ImageFont
 import argparse
 import math 
+import json
+with open('config.json', 'r') as data_file:
+    config = json.load(data_file)
 # constant setup
 radius = 150
 character_height = ( 53 , 86 )
@@ -89,14 +92,19 @@ if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
 
-    parser.add_argument("brgin", help ="info1:datetime of before image(YYYYmmDDHHMM),")
+    parser.add_argument("bigin", help ="info1:datetime of before image(YYYYmmDDHHMM),")
     parser.add_argument("end", help ="info2:datetime of after image(YYYYmmDDHHMM),")
     parser.add_argument("x", help ="info3:location x on rader graph of CWB (NCKU is at 1675,1475)")
     parser.add_argument("y", help ="info4:location -y on rader graph of CWB (NCKU is at 1675,1475)")
+    parser.add_argument("--test", help="test mode",action="store_true")
     args = parser.parse_args()
 
-    before_filename = "image/CV1_3600_" + args.brgin + ".png"
-    after_filename  = "image/CV1_3600_" + args.end + ".png"
+    if args.test:
+        before_filename = config["path"]+"image/CV1_3600_" + args.bigin + ".png"
+        after_filename  = config["path"]+"image/CV1_3600_" + args.end + ".png"
+    else:
+        before_filename = "image/CV1_3600_" + args.bigin + ".png"
+        after_filename  = "image/CV1_3600_" + args.end + ".png"
     position_x = int(args.x)
     position_y = int(args.y)
 
