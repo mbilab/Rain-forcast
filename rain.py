@@ -118,13 +118,10 @@ if __name__ == '__main__':
         ###find cloud
         x = radius - 2 * vector[0]
         y = radius - 2 * vector[1]
-        print (x,y)
 
         ### Vector may out of range ,and it means rains are far away.
         if rain_area(pixels,x,y):
             print (True)
-            print (":rains are coming!")
-            print ("Prediction save as:@prediction_" + args.end + ".png@")
             print ("centroid of before image:",before)
             print ("centroid of after image :", after)
      
