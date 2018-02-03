@@ -8,34 +8,28 @@ const https = require('https')
 const request = require('request')
 const config = require('./config')
 const reply = require('./reply.json')
+
 // db
 const sqlite3 = require('sqlite3').verbose()
 const db = new sqlite3.Database('weather.db')
 
 const app = express()
-////////////ssl certifacate//////////////
-const ssl = () => { 
-  if(fs.existsSync(config.ssl.ca) && fs.existsSync(config.ssl.key) && fs.existsSync(config.ssl.cert)){ return true }
-}
 
-if(ssl()){
-  options = {
+app.use(bodyParser.urlencoded({ extended: false }))
+app.use(bodyParser.json())
+app.use(express.static(__dirname + '/pub'))
+
+// ssl certifacate
+if(config.ssl) {
+  var options = {
     ca : fs.readFileSync(config.ssl.ca),
     key: fs.readFileSync(config.ssl.key),
     cert: fs.readFileSync(config.ssl.cert)
   }
-}
 
-app.use(bodyParser.urlencoded({ extended: false }))
-app.use(bodyParser.json())
-app.use(express.static(__dirname+'/pub'))
-
-if( ssl() ){
-  https.createServer(options, app).listen(config.port, () => {
-    console.log(`listen on port:${config.port}`)
-  })
-}else{ 
-  app.listen(config.port,() => console.log (`listen on port:${config.port} without ssl`) )
+  https.createServer(options, app).listen(config.port, () => console.log(`listen on port:${config.port}`))
+} else {
+  app.listen(config.port,() => console.log (`listen on port:${config.port} without ssl`))
 }
 
 // facebook api webhook
@@ -186,7 +180,7 @@ function analyze() {
     }
 
     console.log(stdout)
-    if (ssl()){  
+    if (ssl()) {
       if (stdout[0] == "T") {
         let output = stdout.split('@')
         let filename = output[1]
