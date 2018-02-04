@@ -8,5 +8,6 @@
     "key" :<yourPrivate>,
     "cert":<yourCertificate>
   },
-  "path":<path for testdata>
+  "path":<path of testdata>,
+  "path_save":<path of images created by test.py>"
 }
