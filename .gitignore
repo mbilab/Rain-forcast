@@ -4,9 +4,9 @@
 *.db*
 *bugfix*
 config.json
-node_modules
-__py*
-/pub
-/image
-/dev
-/ssl
+node_modules/
+__pycache__/
+pub/
+image/
+dev/
+ssl/
