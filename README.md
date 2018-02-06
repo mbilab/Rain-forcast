@@ -29,13 +29,8 @@ Rain-forcast is a messenger  chatbot tells you when to rain.
 * `node server.js`
 
 ## Test
-This test can tells you the changing of centroids which is useful for us to improve the accuracy of `rain.py`. 
-
-### Setup
-* setup testdata(radar images) and modify config.json(where you put the images)
 
 ### Run
-* `python3 test.py YYYYMMDDHHmm YYYYMMDDHHmm x y`.
- Key in first `YYYYMMDDHHmm` the datetime you would like to start ,ending at second `YYYYMMDDHHmm`.
- `x` and `y` is center of the area you want to analyze.(NCKU locates at `1675 1475` ) 
-* get `centroid_test.png` in `pub/` 
+* `python3 rain.py 00 01 1675 1475`
+* `python3 rain.py 10 11 1675 1475`
+* Outputs should be true with images:`prediction_01.png` or `prediction_11.png` in `pub/`
