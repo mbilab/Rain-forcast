@@ -1,12 +1,9 @@
 *.png
 *.PNG
-*.ttf
 *.db*
 *bugfix*
 config.json
 node_modules
 __py*
-/pub
-/image
 /dev
 /ssl

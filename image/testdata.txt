@@ -1,0 +1,5 @@
+testdata_sunny  = CV1_3600_00.png
+testdata_above  = CV1_3600_01.png
+testdata_before = CV1_3600_10.png
+testdata_after  = CV1_3600_11.png
+
