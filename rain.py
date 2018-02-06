@@ -46,6 +46,12 @@ def centroid(filename, position_x, position_y):
     # calculate centroid
     for i in range(width):
         for j in range(height):
+            #! map color to weight
+            #! weight = toWeight(pixels[i, j])
+            #!   return 0 in toWeight() if it is grid line or bg
+            #! count += weight
+            #! x += weight * i
+            #! y += weight * j
 
             # ignore rgb(a,a,a) or which r < threshold
             if not is_grid_line_or_bg(pixels[i, j]) and rain_dot(pixels,i, j):   #毛毛雨以上加權1
