@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 from PIL import Image,ImageDraw,ImageFont
 import argparse
 import math
@@ -106,14 +108,13 @@ if __name__ == '__main__':
     parser.add_argument("y", help = "y:location -y on rader graph of CWB (NCKU is at 1675,1475)")
     args = parser.parse_args()
 
-    before_filename = "image/CV1_3600_" + args.bigin + ".png"
+    before_filename = "image/CV1_3600_" + args.begin + ".png"
     after_filename  = "image/CV1_3600_" + args.end + ".png"
     position_x = int(args.x)
     position_y = int(args.y)
 
     before = centroid(before_filename, position_x, position_y)
     after = centroid(after_filename, position_x, position_y)
-
 
     #may no rain
     if after[0] == 0:
@@ -148,4 +149,3 @@ if __name__ == '__main__':
 
         else :
             print (False)
-# vi:et:ts=4:sw=4

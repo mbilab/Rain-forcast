@@ -6,7 +6,7 @@ Rain-forcast is a messenger  chatbot tells you when to rain.
 * `pip3 install -r requires.txt`
 
 ## Run Forecast without chatbot and ssl
-* `cp config.json.example config.json` and write down your configuration (ignore tokens and ssl)
+* `cp config.sample.json config.json` and write down your configuration (ignore tokens and ssl)
 * `mkdir pub image` 
 * `node server.js`
 
@@ -14,7 +14,7 @@ Rain-forcast is a messenger  chatbot tells you when to rain.
 
 ### Setup 
 * put your key & crt of ssl into your project
-* `cp config.json.example config.json` and write down your configuration
+* `cp config.sample.json config.json` and write down your configuration
 * `mkdir pub image` 
 * create a facebook fan page
 * Go to facebook for developer: https://developers.facebook.com/, see **Facebook Developer Setup**

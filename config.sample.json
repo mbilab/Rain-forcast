@@ -1,0 +1,13 @@
+{
+  "imageHosting": "localhost",
+  "pageToken": "your token",
+  "path": "path of testdata",
+  "path_save": "path of images created by test.py",
+  "port":20000,
+  "ssl": {
+    "ca"  : "your ca_bundle",
+    "key" : "your private",
+    "cert": "your certificate"
+  },
+  "webhookToken": "your Token"
+}
