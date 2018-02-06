@@ -3,7 +3,7 @@
 *.db*
 *bugfix*
 config.json
-node_modules
-__py*
-/dev
-/ssl
+node_modules/
+__pycache__/
+dev/
+ssl
