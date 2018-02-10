@@ -35,38 +35,39 @@ def arrow_positoin(angle):#修改時注意有座標轉換議題
 def is_grid_line_or_bg(px):
     return px[0] == px[1] and px[0] == px[2]
 
+def toWeight(pixels):
+    #毛毛雨加權0.9
+    if not is_grid_line_or_bg(pixels) and pixels[0] < 10 and pixels[1] <= 150 and pixels[0] < 10 :
+        return 0.9
+    #多雲 加權0.5
+    elif not is_grid_line_or_bg(pixels) and  pixels[0] < 10 and pixels[1] <= 200 and pixels[0] < 10:
+        return 0.5
+    elif not is_grid_line_or_bg(pixels) and  pixels[0] > 100:
+        return 1
+    else :
+        return 0
+
 def centroid(filename, position_x, position_y):
     image = Image.open(filename).crop((position_x - radius, position_y - radius, position_x + radius, position_y + radius))
     width, height = image.size#xy
     pixels = image.load()
     count = 0
-    x_pos = 0
-    y_pos = 0
+    x = 0
+    y = 0
 
     # calculate centroid
     for i in range(width):
         for j in range(height):
-            #! map color to weight
-            #! weight = toWeight(pixels[i, j])
-            #!   return 0 in toWeight() if it is grid line or bg
-            #! count += weight
-            #! x += weight * i
-            #! y += weight * j
+            weight = toWeight(pixels[i, j])
+            count += weight
+            x += weight * i
+            y += weight * j
 
-            # ignore rgb(a,a,a) or which r < threshold
-            if not is_grid_line_or_bg(pixels[i, j]) and rain_dot(pixels,i, j):   #毛毛雨以上加權1
-                count += 1
-                x_pos += i
-                y_pos += j
-            elif not is_grid_line_or_bg(pixels[i, j]) and pixels[i, j][2] < 200: #多雲加權0.5
-                count += 1
-                x_pos += i / 2
-                y_pos += i / 2
 
     if count > 0:
-        x_pos /= count
-        y_pos /= count
-    return [x_pos, y_pos]
+        x /= count
+        y /= count
+    return [x, y]
 
 def rain_dot(pixels,i,j):
     if pixels[i,j][0] > 150 or (pixels[i,j][0] < 10 and pixels[i,j][1] < 180 and pixels[i,j][2] < 10 ):

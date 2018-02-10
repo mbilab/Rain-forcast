@@ -8,7 +8,6 @@ const https = require('https')
 const request = require('request')
 const config = require('./config')
 const reply = require('./reply.json')
-
 // db
 const sqlite3 = require('sqlite3').verbose()
 const db = new sqlite3.Database('weather.db')
