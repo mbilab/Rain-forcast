@@ -7,10 +7,7 @@ const http = require('http')
 const https = require('https')
 const request = require('request')
 const config = require('./config')
-const reply = require('./reply.json')
-// db
-const sqlite3 = require('sqlite3').verbose()
-const db = new sqlite3.Database('weather.db')
+const fb = require('./fb')
 
 const app = express()
 
@@ -27,6 +24,10 @@ if (config.ssl) {
   }
 
   https.createServer(options, app).listen(config.port, () => console.log(`listen on port:${config.port}`))
+
+  app.get('/webhook',fb.webhook_get)
+  app.post('/webhook',fb.webhook_post)
+
 } else {
   app.listen(config.port, () =>
     console.log (`listen on port: ${config.port} without ssl`)
@@ -72,3 +73,29 @@ fetchImage(date.addMinutes(time, -20))
 //     })
 //   })
 // }, 1000 * 60)
+
+// function analyze() {
+//   execFile('python3', [
+//     `rain.py`,
+//     `${date.format(date.addMinutes(time, -10), 'YYYYMMDDHHmm').toString()}`,
+//     `${date.format(time, 'YYYYMMDDHHmm').toString()}`,
+//     `1675`,`1475`
+//   ], (error, stdout, stderr) => {
+//     if (error) {
+//       throw error
+//     }
+//
+//     console.log(stdout)
+//     if (ssl()) {
+//       if (stdout[0] == "T") {
+//         let output = stdout.split('@')
+//         let filename = output[1]
+//         getSubscribedUsers().then((users) => {
+//           for (const user of users) {
+//             sendPhotoMessage(user.user_id, config.imageHosting + filename)
+//           }
+//         })
+//       }
+//     }
+//   })
+// }
