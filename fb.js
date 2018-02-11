@@ -33,48 +33,27 @@ const self = module.exports = {
     }
   },
 
-  sendTextMessage : function (recipientId, messageText) {
-    self.callSendAPI({
-      recipient: {
-        id: recipientId
-      },
-      message: {
-        text: messageText
-      }
-    })
-  },
 
-  sendPhotoMessage : function *(recipientId, photoUrl) {
-    console.log(`${photoUrl}`)
-    self.callSendAPI({
-      recipient: {
-        id: recipientId
+  callSendAPI : function (type, recipientId, respone) {
+    let messageData = {
+      messaging_type : type,
+      recipient : {
+        id : recipientId
       },
-      message: {
-        attachment: {
-          type: "image",
-          payload: {
-            url: photoUrl,
-            is_reusable: true
-          }
-        }
-      }
-    })
-  },
+      message : respone
+    }
 
-  callSendAPI : function (messageData) {
     request({
       uri: 'https://graph.facebook.com/v2.6/me/messages',
       qs: { access_token: config.pageToken },
       method: 'POST',
       json: messageData
-    }, function (error, response, body) {
+    }, (error, response, body) => {
       if (!error && response.statusCode == 200) {
         console.log("Successfully sent generic message with id %s to recipient %s", body.message_id, body.recipient_id)
       } else {
         console.error("Unable to send message.")
-        console.error(response)
-        console.error(error)
+        console.log(respone)
       }
     })
   },
@@ -87,6 +66,7 @@ const self = module.exports = {
     console.log("Received message for user %d and page %d at %d with message:", senderID, event.recipient.id, event.timestamp)
     console.log(JSON.stringify(event.message))
 
+    let type ='RESPONSE'
     //find user status
     self.getSenderStatus(senderID).then((senderStatus) => {
       if (messageText) {
@@ -96,9 +76,9 @@ const self = module.exports = {
           response = text[0].a
           self.dispatchDBAction(senderID, senderStatus)
         }
-        self.sendTextMessage(senderID, response)
+        self.callSendAPI(type, senderID, response)
       } else if (messageAttachments) {
-        self.sendTextMessage(senderID, "^.^")
+        self.callSendAPI(type, senderID, {"text" : "^.^"})
       }
     })
   },
