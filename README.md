@@ -31,6 +31,6 @@ Rain-forcast is a messenger  chatbot tells you when to rain.
 ## Test
 
 ### Run
-* `python3 rain.py 00 01 1675 1475`
-* `python3 rain.py 10 11 1675 1475`
+* `python3 rain.py 00 01 1675 1475` # False
+* `python3 rain.py 10 11 1675 1475` # True
 * Outputs should be true with images:`prediction_01.png` or `prediction_11.png` in `pub/`

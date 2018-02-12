@@ -32,21 +32,6 @@ def arrow_angle(vector):
 def arrow_positoin(angle): # 修改時注意有座標轉換議題
     return [int(radius - 80 * math.cos(angle) - 50), int(radius + 80 * math.sin(angle) - 50)]
 
-def toWeight(px):
-    # 背景或格線: 0
-    if px[0] == px[1] and px[0] == px[2]: return 0 # grayscale
-
-    # 毛毛雨: 0.9
-    if px[0] < 10 and px[1] <= 150 and px[0] < 10: #! what color?
-        return 0.9
-
-    # 多雲: 0.5
-    if px[0] < 10 and px[1] <= 200 and px[0] < 10: #! what color?
-        return 0.5
-
-    #if pixels[0] > 100:
-    return 1 #! check the logic
-
 def centroid(filename, position_x, position_y):
     image = Image.open(filename).crop((position_x - radius, position_y - radius, position_x + radius, position_y + radius))
     width, height = image.size#xy
@@ -58,7 +43,7 @@ def centroid(filename, position_x, position_y):
     # calculate centroid
     for i in range(width):
         for j in range(height):
-            weight = toWeight(pixels[i, j])
+            weight = color_weight(pixels[i, j])
             count += weight
             x += weight * i
             y += weight * j
@@ -68,6 +53,24 @@ def centroid(filename, position_x, position_y):
         x /= count
         y /= count
     return x, y
+
+def color_weight(color):
+    # 背景或格線: 0
+    if is_grayscale(color): return 0
+
+    # 毛毛雨: 0.9
+    if color[0] < 10 and color[1] <= 150 and color[0] < 10: #! what color?
+        return 0.9
+
+    # 多雲: 0.5
+    if color[0] < 10 and color[1] <= 200 and color[0] < 10: #! what color?
+        return 0.5
+
+    #if pixels[0] > 100:
+    return 1 #! check the logic
+
+def is_grayscale(color):
+    return color[0] == color[1] and color[0] == color[2]
 
 def rain_dot(pixels,i,j):
     if pixels[i,j][0] > 150 or (pixels[i,j][0] < 10 and pixels[i,j][1] < 180 and pixels[i,j][2] < 10 ):
@@ -82,7 +85,7 @@ def rain_area(pixels, x, y):#True: In distance<35 ,more than 50% of pixels are r
 
     for i in range(300):
         for j in range(300):
-            if math.sqrt((x - i) ** 2 + (y - j) ** 2) < area_radius and rain_dot(pixels,i,j) and not is_grid_line_or_bg(pixels[i, j]):
+            if math.sqrt((x - i) ** 2 + (y - j) ** 2) < area_radius and rain_dot(pixels,i,j) and not is_grayscale(pixels[i, j]):
                 count += 1
 
     if count > 0.5 * math.pi * area_radius ** 2:
@@ -98,7 +101,7 @@ def moving_direction(pixels, after, before):
         count_cloud = 0
         for i in range(radius * 2):
             for j in range(radius * 2):
-                if pixels[i, j][0] > 80 and not is_grid_line_or_bg(pixels[i, j]):
+                if pixels[i, j][0] > 80 and not is_grayscale(pixels[i, j]):
                     count_cloud += 1
         if count_cloud > 70000:
             return [before[0] - after[0], before[1] - after[1]]
@@ -109,14 +112,13 @@ if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
 
-    parser.add_argument("begin", help = "begin:datetime of before image(YYYYmmDDHHMM),")
-    parser.add_argument("end", help = "end:datetime of after image(YYYYmmDDHHMM),")
-    parser.add_argument("x", help = "x:location x on rader graph of CWB (NCKU is at 1675,1475)")
-    parser.add_argument("y", help = "y:location -y on rader graph of CWB (NCKU is at 1675,1475)")
+    parser.add_argument('images', help='image filenames in YYYYmmDDHHMM format', nargs='*')
+    parser.add_argument('-x', default=1675, help='x on the rader graph of CWB, NCKU is at (1675, 1475)')
+    parser.add_argument('-y', default=1475, help='y on the rader graph of CWB, NCKU is at (1675, 1475)')
     args = parser.parse_args()
 
-    before_filename = "image/CV1_3600_" + args.begin + ".png"
-    after_filename  = "image/CV1_3600_" + args.end + ".png"
+    before_filename = "image/CV1_3600_" + args.images[0] + ".png"
+    after_filename  = "image/CV1_3600_" + args.images[1] + ".png"
     position_x = int(args.x)
     position_y = int(args.y)
 
@@ -152,7 +154,7 @@ if __name__ == '__main__':
             else :#剛發展的雲
                 ImageDraw.Draw(bg).text((30,335), "雲系發展中，要下雨了喔~", font = fnt)
             bg.paste(base_im, (50, 20))
-            bg.save("pub/prediction_" + args.end + ".png", format = "png")
+            bg.save("pub/prediction_" + args.images[1] + ".png", format = "png")
 
         else :
             print (False)
