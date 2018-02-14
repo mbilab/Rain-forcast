@@ -57,6 +57,7 @@ def centroid(image): # {{{
 def color_weight(color): # {{{
     # 背景或格線: 0
     if is_grayscale(color): return 0
+    #!TODO:list colors doesn't rain
 
     # 毛毛雨: 0.9
     if color[0] < 10 and color[1] <= 150 and color[0] < 10: #! what color?
@@ -65,7 +66,7 @@ def color_weight(color): # {{{
     # 多雲: 0.5
     if color[0] < 10 and color[1] <= 200 and color[0] < 10: #! what color?
         return 0.5
-
+ 
     #if pixels[0] > 100:
     return 1 #! check the logic
 # }}}
