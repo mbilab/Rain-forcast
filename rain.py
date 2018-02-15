@@ -12,6 +12,7 @@ with open('config.json', 'r') as data_file:
 arrow_path = './image/arrow.png'
 character_path = './image/character.png'
 font_path = './zh.ttf'
+output_path = './tmp/'
 
 def arrow_angle(wd): # {{{ wd: wind direction
     if 0 == wd[0]:
@@ -100,7 +101,7 @@ def rain_at(image, x, y, radius=20): # {{{
 # }}}
 
 def wind_direction(centroids, image): # {{{
-    if (0, 0) == centroids[-2]: # new rain in the last image (no rain in images[-2])
+    if (0, 0) == centroids[-2]: # new rain in the last image (rain in images[-1] but not in images[-2])
         return 0, 0 # the wind direction is (0, 0)
 
     #! TODO: improve logic
@@ -139,6 +140,6 @@ if '__main__' == __name__:
         if rain_at(images[-1], args.r - 2 * wd[0], args.r - 2 * wd[1]):
             # (args.x, args.y) will rain in 10 minutes
             print(True)
-            draw(images[-1], wd, 'result/prediction_%s.png' % args.images[1])
+            draw(images[-1], wd, '%s/prediction_%s.png' % (output_path, args.images[1]))
         else:
             print(False)

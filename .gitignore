@@ -1,9 +1,11 @@
-fetch/
-result/
-*.db*
 *bugfix*
 config.json
+cwb/
+*.db*
+dev/
+fetch/
+image/
 node_modules/
 __pycache__/
-dev/
 ssl
+tmp/

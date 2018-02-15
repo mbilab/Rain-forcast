@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 const bodyParser = require('body-parser')
 const date = require('date-and-time')
 const { execFile } = require('child_process')
@@ -13,7 +15,7 @@ const app = express()
 
 app.use(bodyParser.urlencoded({ extended: false }))
 app.use(bodyParser.json())
-app.use(express.static(__dirname + '/result'))
+app.use(express.static(__dirname + '/tmp')) //! put into config.json
 
 // ssl certifacate
 if (config.ssl) {
@@ -34,36 +36,36 @@ if (config.ssl) {
   )
 }
 
-const fetchImage = time =>{
-  return new Promise((resolve, reject)=>{
-    const filename = `CV1_3600_${date.format(time, "YYYYMMDDHHmm")}.png`
-    const path = 'fetch/' + filename //config.path is a dir for saving image downloaded
-    if (fs.existsSync(path)){
-      console.log(`fetch ${filename}`)
-      //time = date.addMinutes(time,10)
-      resolve()
+const fetchImage = time => new Promise((resolve, reject) => {
+  const fname = `CV1_3600_${date.format(time, 'YYYYMMDDHHmm')}.png`
+  const path = `${config.cwb_path}/${fname}`
+
+  if (fs.existsSync(path)) {
+    console.log(`${fname} exists, skip fetch`)
+    return resolve()
+  }
+
+  const url = `http://www.cwb.gov.tw/V7/observe/radar/Data/HD_Radar/${fname}`
+  console.log(`fetching ${fname}`)
+  http.get(url, (response) => {
+    if (200 != response.statusCode) {
+      console.log(`fetch ${fname} failed`)
+      return reject()
     }
-    const url = `http://www.cwb.gov.tw/V7/observe/radar/Data/HD_Radar/${filename}`
-    http.get(url, (response) => {
-      //! what if time is before 10m?//I don't understand this question.
-      if (response.statusCode != 200) {
-        console,log('fetch failed')
-        reject()
-      }
-      response.pipe(fs.createWriteStream(path)
-      .on('close', () => {
-        console.log(`fetch ${filename}`)
-        //time = date.addMinutes(time,10)
-        resolve()
-      }))
-    })
-  })//!TODO.then().catch()
-}
+    response.pipe(fs.createWriteStream(path).on('close', () => {
+      console.log(`${fname} fetched`)
+      resolve()
+    }))
+  })
+})
+
 ////////download radar
 let time = new Date()
-time = date.addMinutes(time,-20-parseInt(date.format(time, 'mm')) % 10)
-fetchImage(time).then(() => )
-.catch()
+time = date.addMinutes(time, -parseInt(date.format(time, 'mm')) % 10)
+fetchImage(date.addMinutes(time, -20))
+  //.then(() => time = date.addMinutes(time, 10))
+  .then(() => console.log('ok'))
+  .catch()
 
 // setInterval(() => {
 //    filename = `image/CV1_3600_${date.format(time, "YYYYMMDDHHmm").toString()}.png`
