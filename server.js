@@ -40,6 +40,7 @@ const fetchImage = time =>{
     const path = 'fetch/' + filename //config.path is a dir for saving image downloaded
     if (fs.existsSync(path)){
       console.log(`fetch ${filename}`)
+      //time = date.addMinutes(time,10)
       resolve()
     }
     const url = `http://www.cwb.gov.tw/V7/observe/radar/Data/HD_Radar/${filename}`
@@ -52,16 +53,16 @@ const fetchImage = time =>{
       response.pipe(fs.createWriteStream(path)
       .on('close', () => {
         console.log(`fetch ${filename}`)
+        //time = date.addMinutes(time,10)
         resolve()
       }))
     })
-  })
+  })//!TODO.then().catch()
 }
 ////////download radar
 let time = new Date()
-time = date.addMinutes(time, -parseInt(date.format(time, 'mm')) % 10)
-fetchImage(date.addMinutes(time, -20))
-.then(() => time = date.addMinutes(time,10))
+time = date.addMinutes(time,-20-parseInt(date.format(time, 'mm')) % 10)
+fetchImage(time).then(() => )
 .catch()
 
 // setInterval(() => {
