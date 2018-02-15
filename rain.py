@@ -51,26 +51,19 @@ def centroid(image): # {{{
 # }}}
 
 def color_weight(color): # {{{
-    # 背景或格線: 0
-    if is_grayscale(color): return 0
+    if is_grayscale(color): return 0 # 背景或格線
+    if color[1] > 200: return 0 # light green
+    if color[2] > 200: return 0 # blue
 
-    if color[2] > 200: return 0 #blue
+    if color[0] < 10:
+        if color[1] <= 150: return 0.9 # dark green (毛毛雨)
+        if color[1] <= 200: return 0.5 # green (多雲)
 
-    if color[1] > 200: return 0 #light green
-
-    # 毛毛雨: 0.9
-    if color[0] < 10 and color[1] <= 150 and color[0] < 10: #dark green
-        return 0.9
-
-    # 多雲: 0.5
-    if color[0] < 10 and color[1] <= 200 and color[0] < 10: #green
-        return 0.5
- 
-    #if pixels[0] > 100: #yellow red  purple
     return 1
 # }}}
 
 def draw(last_image, wd, path): # {{{ wd: window direction
+    #! since there are so many constants, do we need character_path, character_size... ?
     character = Image.open(character_path).resize((53, 86))
     font = ImageFont.truetype(font_path, 30)
     last_image.paste(character, (123, 90), mask=character)
