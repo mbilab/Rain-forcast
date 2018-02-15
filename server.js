@@ -34,30 +34,35 @@ if (config.ssl) {
   )
 }
 
-//! return promise
-const fetchImage = time => {
-  const filename = `CV1_3600_${date.format(time, "YYYYMMDDHHmm")}.png`
-  //! image/ should be in config.json
-  //! if `image/${filename}` exists, skip fetch
-  const url = `http://www.cwb.gov.tw/V7/observe/radar/Data/HD_Radar/${filename}`
-  console.log(`fetching ${url}`)
-  http.get(url, function(response) {
-    if (200 != response.statusCode) {
-      //! what if time is before 10m?
-      return console.log(`fetch failed (statusCode: ${response.statusCode})`)
+const fetchImage = time =>{
+  return new Promise((resolve, reject)=>{
+    const filename = `CV1_3600_${date.format(time, "YYYYMMDDHHmm")}.png`
+    const path = config.fetch + filename //config.path is a dir for saving image downloaded
+    if (fs.existsSync(path)){
+      console.log(`fetch ${filename}`)
+      resolve()
     }
-    response.pipe(fs.createWriteStream(`image/${filename}`))
+    const url = `http://www.cwb.gov.tw/V7/observe/radar/Data/HD_Radar/${filename}`
+    http.get(url, (response) => {
+      //! what if time is before 10m?//I don't understand this question.
+      if (response.statusCode != 200) {
+        console,log('fetch failed')
+        reject()
+      }
+      response.pipe(fs.createWriteStream(path)
       .on('close', () => {
-        time = date.addMinutes(time, 10)
-      })
+        console.log(`fetch ${filename}`)
+        resolve()
+      }))
+    })
   })
 }
-
 ////////download radar
 let time = new Date()
 time = date.addMinutes(time, -parseInt(date.format(time, 'mm')) % 10)
 fetchImage(date.addMinutes(time, -20))
-//getImage(date.addMinutes(time, -10))
+.then(() => time = date.addMinutes(time,10))
+.catch()
 
 // setInterval(() => {
 //    filename = `image/CV1_3600_${date.format(time, "YYYYMMDDHHmm").toString()}.png`

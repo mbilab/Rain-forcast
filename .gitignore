@@ -1,5 +1,5 @@
-*.png
-*.PNG
+fetch/
+pub/
 *.db*
 *bugfix*
 config.json
