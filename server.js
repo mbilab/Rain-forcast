@@ -1,15 +1,14 @@
 #!/usr/bin/env node
 
 const bodyParser = require('body-parser')
+const config = require('./config')
 const dateAndTime = require('date-and-time')
-const { execFile } = require('child_process')
+const {execFile} = require('child_process')
 const express = require('express')
+const fb = require('./fb')
 const fs = require('fs')
 const http = require('http')
 const https = require('https')
-const request = require('request')
-const config = require('./config')
-const fb = require('./fb')
 
 const app = express()
 
@@ -20,62 +19,57 @@ app.use(express.static(__dirname + '/tmp')) //! put into config.json
 // ssl certifacate
 if (config.ssl) {
   var options = {
-    ca : fs.readFileSync(config.ssl.ca),
+    ca: fs.readFileSync(config.ssl.ca),
+    cert: fs.readFileSync(config.ssl.cert),
     key: fs.readFileSync(config.ssl.key),
-    cert: fs.readFileSync(config.ssl.cert)
   }
 
   https.createServer(options, app).listen(config.port, () => console.log(`listen on port:${config.port}`))
 
-  app.get('/webhook',fb.webhook_get)
-  app.post('/webhook',fb.webhook_post)
-
+  app.get('/webhook', fb.webhook_get)
+  app.post('/webhook', fb.webhook_post)
 } else {
-  // app.listen(config.port, () =>
-  //   console.log (`listen on port: ${config.port} without ssl`)
-  // )
+  app.listen(config.port, () => console.log (`listen on port: ${config.port} without ssl`))
 }
 
-////////////////////////////////////////////////////////////////////////////////
-// fetch cwb images
+;(async () => { // fetch cwb images
 
-const fetchImage = (time, verbose=false) => new Promise((resolve, reject) => { // {{{
-  const fname = `CV1_3600_${dateAndTime.format(time, 'YYYYMMDDHHmm')}.png`
-  const path = `${config.cwb_path}/${fname}`
+  const fetchImage = (time, verbose=false) => new Promise((resolve, reject) => { // {{{
+    const fname = `CV1_3600_${dateAndTime.format(time, 'YYYYMMDDHHmm')}.png`
+    const path = `${config.cwbPath}/${fname}`
 
-  if (fs.existsSync(path)) {
-    if (verbose) console.log(`${fname} exists, skip fetch`)
-    return resolve()
-  }
-
-  const url = `http://www.cwb.gov.tw/V7/observe/radar/Data/HD_Radar/${fname}`
-  if (verbose) console.log(`fetching ${fname}`)
-  http.get(url, (response) => {
-    if (200 != response.statusCode) {
-      if (verbose) console.log(`fetch ${fname} failed`)
-      return reject(time)
+    if (fs.existsSync(path)) {
+      if (verbose) console.log(`${fname} exists, skip fetch`)
+      return resolve()
     }
-    response.pipe(fs.createWriteStream(path).on('close', () => {
-      if (verbose) console.log(`${fname} fetched`)
-      resolve()
-    }))
-  })
-}) // }}}
 
-const fetchService = async () => { // {{{
-  try {
-    await fetchImage(time)
-    console.log(`${dateAndTime.format(time, 'YYYYMMDDHHmm')} successed, next image in 9 minute`)
-    time = dateAndTime.addMinutes(time, 10)
-    setTimeout(fetchService, 1000 * 60 * 9)
-  } catch(e) {
-    console.log(`${dateAndTime.format(time, 'YYYYMMDDHHmm')} failed, retry in 1 minute`)
-    setTimeout(fetchService, 1000 * 10 * 1)
-  }
-} // }}}
+    const url = `http://www.cwb.gov.tw/V7/observe/radar/Data/HD_Radar/${fname}`
+    if (verbose) console.log(`fetching ${fname}`)
+    http.get(url, (response) => {
+      if (200 != response.statusCode) {
+        if (verbose) console.log(`fetch ${fname} failed`)
+        return reject(time)
+      }
+      response.pipe(fs.createWriteStream(path).on('close', () => {
+        if (verbose) console.log(`${fname} fetched`)
+        resolve()
+      }))
+    })
+  }) // }}}
 
-let time = new Date()
-;(async () => {
+  const fetchService = async () => { // {{{
+    try {
+      await fetchImage(time)
+      console.log(`${dateAndTime.format(time, 'YYYYMMDDHHmm')} successed, next image in ${config.cwbSuccessTimeout / 60000} minute`)
+      time = dateAndTime.addMinutes(time, 10)
+      setTimeout(fetchService, config.cwbSuccessTimeout)
+    } catch(e) {
+      console.log(`${dateAndTime.format(time, 'YYYYMMDDHHmm')} failed, retry in ${config.cwbFailTimeout} minute`)
+      setTimeout(fetchService, config.cwbFailTimeout)
+    }
+  } // }}}
+
+  let time = new Date()
   time = dateAndTime.addMinutes(time, -parseInt(dateAndTime.format(time, 'mm')) % 10)
   await fetchImage(dateAndTime.addMinutes(time, -20), true)
   time = dateAndTime.addMinutes(time, -10)

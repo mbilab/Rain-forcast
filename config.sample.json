@@ -1,4 +1,7 @@
 {
+  "cwbFailTimeout": 60000,
+  "cwbSuccessTimeout": 540000,
+  "cwbPath": "cwb",
   "imageHosting": "localhost",
   "pageToken": "your token",
   "path": "path of testdata",
