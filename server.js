@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 const bodyParser = require('body-parser')
-const date = require('date-and-time')
+const dateAndTime = require('date-and-time')
 const { execFile } = require('child_process')
 const express = require('express')
 const fs = require('fs')
@@ -31,56 +31,56 @@ if (config.ssl) {
   app.post('/webhook',fb.webhook_post)
 
 } else {
-  app.listen(config.port, () =>
-    console.log (`listen on port: ${config.port} without ssl`)
-  )
+  // app.listen(config.port, () =>
+  //   console.log (`listen on port: ${config.port} without ssl`)
+  // )
 }
 
-const fetchImage = time => new Promise((resolve, reject) => {
-  const fname = `CV1_3600_${date.format(time, 'YYYYMMDDHHmm')}.png`
+////////////////////////////////////////////////////////////////////////////////
+// fetch cwb images
+
+const fetchImage = (time, verbose=false) => new Promise((resolve, reject) => { // {{{
+  const fname = `CV1_3600_${dateAndTime.format(time, 'YYYYMMDDHHmm')}.png`
   const path = `${config.cwb_path}/${fname}`
 
   if (fs.existsSync(path)) {
-    console.log(`${fname} exists, skip fetch`)
+    if (verbose) console.log(`${fname} exists, skip fetch`)
     return resolve()
   }
 
   const url = `http://www.cwb.gov.tw/V7/observe/radar/Data/HD_Radar/${fname}`
-  console.log(`fetching ${fname}`)
+  if (verbose) console.log(`fetching ${fname}`)
   http.get(url, (response) => {
     if (200 != response.statusCode) {
-      console.log(`fetch ${fname} failed`)
-      return reject()
+      if (verbose) console.log(`fetch ${fname} failed`)
+      return reject(time)
     }
     response.pipe(fs.createWriteStream(path).on('close', () => {
-      console.log(`${fname} fetched`)
+      if (verbose) console.log(`${fname} fetched`)
       resolve()
     }))
   })
-})
+}) // }}}
 
-////////download radar
+const fetchService = async () => { // {{{
+  try {
+    await fetchImage(time)
+    console.log(`${dateAndTime.format(time, 'YYYYMMDDHHmm')} successed, next image in 9 minute`)
+    time = dateAndTime.addMinutes(time, 10)
+    setTimeout(fetchService, 1000 * 60 * 9)
+  } catch(e) {
+    console.log(`${dateAndTime.format(time, 'YYYYMMDDHHmm')} failed, retry in 1 minute`)
+    setTimeout(fetchService, 1000 * 10 * 1)
+  }
+} // }}}
+
 let time = new Date()
-time = date.addMinutes(time, -parseInt(date.format(time, 'mm')) % 10)
-fetchImage(date.addMinutes(time, -20))
-  //.then(() => time = date.addMinutes(time, 10))
-  .then(() => console.log('ok'))
-  .catch()
-
-// setInterval(() => {
-//    filename = `image/CV1_3600_${date.format(time, "YYYYMMDDHHmm").toString()}.png`
-//    url = `http://www.cwb.gov.tw/V7/observe/radar/Data/HD_Radar/CV1_3600_${date.format(time, 'YYYYMMDDHHmm').toString()}.png`
-//   console.log(`downloading from: ${url}`)
-//   http.get(url, function(response) {
-//     if(response.statusCode != 200) {
-//       return console.log(`Download failed.statusCode:${response.statusCode}`)
-//     }
-//     response.pipe(fs.createWriteStream(filename)).on('close', () => {
-//       analyze()
-//       time = date.addMinutes(time,10)
-//     })
-//   })
-// }, 1000 * 60)
+;(async () => {
+  time = dateAndTime.addMinutes(time, -parseInt(dateAndTime.format(time, 'mm')) % 10)
+  await fetchImage(dateAndTime.addMinutes(time, -20), true)
+  time = dateAndTime.addMinutes(time, -10)
+  fetchService()
+})()
 
 // function analyze() {
 //   execFile('python3', [
