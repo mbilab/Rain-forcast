@@ -52,12 +52,12 @@ def centroid(image): # {{{
 
 def color_weight(color): # {{{
     if is_grayscale(color): return 0 # 背景或格線
-    if color[1] > 200: return 0 # light green
-    if color[2] > 200: return 0 # blue
+    if color[0] < 100 and color[2] > 200: return 0 # blue
 
-    if color[0] < 10:
+    if color[0] < 10 and color[2] < 10:
         if color[1] <= 150: return 0.9 # dark green (毛毛雨)
         if color[1] <= 200: return 0.5 # green (多雲)
+        if color[1] > 200: return 0 # light green(一點雲)
 
     return 1
 # }}}
