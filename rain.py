@@ -10,12 +10,8 @@ with open('config.json', 'r') as data_file:
 
 # constant setup
 arrow_path = './image/arrow.png'
-bg_color = (50, 130, 230)
 character_path = './image/character.png'
-character_position = (123, 90)
-character_size = (53, 86)
 font_path = './zh.ttf'
-font_size = 30
 
 def arrow_angle(wd): # {{{ wd: wind direction
     if 0 == wd[0]:
@@ -57,26 +53,28 @@ def centroid(image): # {{{
 def color_weight(color): # {{{
     # 背景或格線: 0
     if is_grayscale(color): return 0
-    #!TODO:list colors doesn't rain
+
+    if color[2] > 200: return 0 #blue
+
+    if color[1] > 200: return 0 #light green
 
     # 毛毛雨: 0.9
-    if color[0] < 10 and color[1] <= 150 and color[0] < 10: #! what color?
+    if color[0] < 10 and color[1] <= 150 and color[0] < 10: #dark green
         return 0.9
 
     # 多雲: 0.5
-    if color[0] < 10 and color[1] <= 200 and color[0] < 10: #! what color?
+    if color[0] < 10 and color[1] <= 200 and color[0] < 10: #green
         return 0.5
  
-    #if pixels[0] > 100:
-    return 1 #! check the logic
+    #if pixels[0] > 100: #yellow red  purple
+    return 1
 # }}}
 
 def draw(last_image, wd, path): # {{{ wd: window direction
-    #! since there are so many constants, do we need character_path, character_size... ?
-    character = Image.open(character_path).resize(character_size)
-    font = ImageFont.truetype(font_path, font_size)
-    last_image.paste(character, character_position, mask=character)
-    image = Image.new('RGB', (400, 400), bg_color)
+    character = Image.open(character_path).resize((53, 86))
+    font = ImageFont.truetype(font_path, 30)
+    last_image.paste(character, (123, 90), mask=character)
+    image = Image.new('RGB', (400, 400), (50, 130, 230))
     angle = arrow_angle(wd)
     if angle >= 0:
         ImageDraw.Draw(image).text((30, 335), '雲飄來了，要下雨了喔~', font=font)
@@ -97,20 +95,19 @@ def rain_at(image, x, y, radius=20): # {{{
 
     count = 0
     pixels = image.load()
-    radius *= radius
+    radius_square = radius * radius
 
     for j in range(image.size[1]):
         for i in range(image.size[0]):
-            if (x - i) ** 2 + (y - j) ** 2 > radius: continue
-            if color_weight(pixels[i, j]): #! check the logic
+            if (x - i) ** 2 + (y - j) ** 2 > radius_square: continue
+            if color_weight(pixels[i, j]):
                 count += 1
-
     # True if more than 50% nearby pixels is raining
-    return count > 0.5 * math.pi * radius ** 2
+    return count > 0.5 * math.pi * radius_square
 # }}}
 
 def wind_direction(centroids, image): # {{{
-    if [0, 0] == centroids[-2]: # new rain in the last image (no rain in images[-2])
+    if (0, 0) == centroids[-2]: # new rain in the last image (no rain in images[-2])
         return 0, 0 # the wind direction is (0, 0)
 
     #! TODO: improve logic
@@ -146,7 +143,7 @@ if '__main__' == __name__:
         wd = wind_direction(centroids, images[-1])
         # (args.r, args.r) is the center of images[-1]
         # (args.r - wd[0], args.r - wd[1]) will be the center 10 minutes later
-        if rain_at(images[-1], args.r - wd[0], args.r - wd[1]):
+        if rain_at(images[-1], args.r - 2 * wd[0], args.r - 2 * wd[1]):
             # (args.x, args.y) will rain in 10 minutes
             print(True)
             draw(images[-1], wd, 'pub/prediction_%s.png' % args.images[1])
