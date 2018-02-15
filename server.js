@@ -13,7 +13,7 @@ const app = express()
 
 app.use(bodyParser.urlencoded({ extended: false }))
 app.use(bodyParser.json())
-app.use(express.static(__dirname + '/pub'))
+app.use(express.static(__dirname + '/result'))
 
 // ssl certifacate
 if (config.ssl) {
@@ -37,7 +37,7 @@ if (config.ssl) {
 const fetchImage = time =>{
   return new Promise((resolve, reject)=>{
     const filename = `CV1_3600_${date.format(time, "YYYYMMDDHHmm")}.png`
-    const path = config.fetch + filename //config.path is a dir for saving image downloaded
+    const path = 'fetch/' + filename //config.path is a dir for saving image downloaded
     if (fs.existsSync(path)){
       console.log(`fetch ${filename}`)
       resolve()

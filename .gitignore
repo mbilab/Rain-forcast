@@ -1,5 +1,5 @@
 fetch/
-pub/
+result/
 *.db*
 *bugfix*
 config.json

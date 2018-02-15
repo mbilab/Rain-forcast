@@ -139,6 +139,6 @@ if '__main__' == __name__:
         if rain_at(images[-1], args.r - 2 * wd[0], args.r - 2 * wd[1]):
             # (args.x, args.y) will rain in 10 minutes
             print(True)
-            draw(images[-1], wd, 'pub/prediction_%s.png' % args.images[1])
+            draw(images[-1], wd, 'result/prediction_%s.png' % args.images[1])
         else:
             print(False)

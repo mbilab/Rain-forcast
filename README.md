@@ -7,15 +7,15 @@ Rain-forcast is a messenger  chatbot tells you when to rain.
 
 ## Run Forecast without chatbot and ssl
 * `cp config.sample.json config.json` and write down your configuration (ignore tokens and ssl)
-* `mkdir pub image` 
+* `mkdir fetch result`we put image downloaded in `fetch` and result of rain.py in `reslt`
 * `node server.js`
 
 ## Run Forecast
 
-### Setup 
+### Setup
 * put your key & crt of ssl into your project
 * `cp config.sample.json config.json` and write down your configuration
-* `mkdir pub image` 
+* `mkdir fetch result`we put image downloaded in fetch and `result` of rain.py in `reslt`
 * create a facebook fan page
 * Go to facebook for developer: https://developers.facebook.com/, see **Facebook Developer Setup**
 
