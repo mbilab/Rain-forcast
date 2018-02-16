@@ -122,12 +122,17 @@ if '__main__' == __name__:
     parser = argparse.ArgumentParser()
 
     parser.add_argument('images', help='image filenames in YYYYmmDDHHMM format', nargs='*')
-    parser.add_argument('-r', default=150, help='radius on the rader graph of CWB (default: 150)', type=int)
+    parser.add_argument('-d', default=10, dest='duration', help='duration from the last image to prediction (default: 10, unit: minute)', type=float)
+    parser.add_argument('-r', default=150, dest='radius', help='radius on the rader graph of CWB (default: 150)', type=int)
     parser.add_argument('-x', default=1675, help='x on the rader graph of CWB, NCKU is at (1675, 1475)', type=int)
     parser.add_argument('-y', default=1475, help='y on the rader graph of CWB, NCKU is at (1675, 1475)', type=int)
     args = parser.parse_args()
 
-    area = (args.x - args.r, args.y - args.r, args.x + args.r, args.y + args.r)
+    if len(args.images) < 2:
+        print('please specify at least 2 images')
+        exit()
+
+    area = (args.x - args.radius, args.y - args.radius, args.x + args.radius, args.y + args.radius)
     images = [Image.open('image/CV1_3600_%s.png' % v).crop(area) for v in args.images]
     centroids = [centroid(v) for v in images]
 
@@ -135,9 +140,10 @@ if '__main__' == __name__:
         print(False) # no rain in images[-1]
     else:
         wd = wind_direction(centroids, images[-1])
-        # (args.r, args.r) is the center of images[-1]
-        # (args.r - wd[0], args.r - wd[1]) will be the center 10 minutes later
-        if rain_at(images[-1], args.r - 2 * wd[0], args.r - 2 * wd[1]):
+        # (args.radius, args.radius) is the center of images[-1]
+        # (args.radius - wd[0], args.radius - wd[1]) will be the center 10 minutes later
+        center = [args.radius - v * args.duration / 10 for v in wd]
+        if rain_at(images[-1], *center):
             # (args.x, args.y) will rain in 10 minutes
             print(True)
             draw(images[-1], wd, '%s/prediction_%s.png' % (output_path, args.images[1]))
