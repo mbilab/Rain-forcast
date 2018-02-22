@@ -59,7 +59,7 @@ if (config.ssl) {
 
   const fetchService = async () => { // {{{
     try {
-      await fetchImage(time).then(analysis(time))
+      await fetchImage(time).then(() => analysis(time))
       console.log(`${dateAndTime.format(time, 'YYYYMMDDHHmm')} successed, next image in ${config.cwbSuccessTimeout / 60000} minute`)
       time = dateAndTime.addMinutes(time, 10)
       setTimeout(fetchService, config.cwbSuccessTimeout)
@@ -75,7 +75,7 @@ if (config.ssl) {
   time = dateAndTime.addMinutes(time, -10)
   fetchService()
 })()
-//!TODO promisify analysis
+
 function analysis(time) {
   execFile('python3', [
     `rain.py`,
