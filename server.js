@@ -32,10 +32,12 @@ if (config.ssl) {
   app.listen(config.port, () => console.log (`listen on port: ${config.port} without ssl`))
 }
 
+const timeString = (time, minutes=0) => dateAndTime.format(dateAndTime.addMinutes(time, minutes), 'YYYYMMDDHHmm')
+
 ;(async () => { // fetch cwb images
-//why there is no return befor Promise?
+  //! why there is no return befor Promise?
   const fetchImage = (time, verbose=false) => new Promise((resolve, reject) => { // {{{
-    const fname = `CV1_3600_${dateAndTime.format(time, 'YYYYMMDDHHmm')}.png`
+    const fname = `CV1_3600_${timeString(time)}.png`
     const path = `${config.cwbPath}/${fname}`
 
     if (fs.existsSync(path)) {
@@ -60,11 +62,12 @@ if (config.ssl) {
   const fetchService = async () => { // {{{
     try {
       await fetchImage(time).then(() => analysis(time))
-      console.log(`${dateAndTime.format(time, 'YYYYMMDDHHmm')} successed, next image in ${config.cwbSuccessTimeout / 60000} minute`)
+      console.log(`${timeString(time)} successed, next image in ${config.cwbSuccessTimeout / 60000} minute`)
+      //! analyze here, no .then() syntax is needed
       time = dateAndTime.addMinutes(time, 10)
       setTimeout(fetchService, config.cwbSuccessTimeout)
     } catch(e) {
-      console.log(`${dateAndTime.format(time, 'YYYYMMDDHHmm')} failed, retry in ${config.cwbFailTimeout / 60000} minute`)
+      console.log(`${timeString(time)} failed, retry in ${config.cwbFailTimeout / 60000} minute`)
       setTimeout(fetchService, config.cwbFailTimeout)
     }
   } // }}}
@@ -78,17 +81,17 @@ if (config.ssl) {
 
 function analysis(time) {
   execFile('python3', [
-    `rain.py`,
-    `${date.format(date.addMinutes(time, -10), 'YYYYMMDDHHmm').toString()}`,
-    `${date.format(time, 'YYYYMMDDHHmm').toString()}`,
+    './rain.py',
+    timeString(time, -10),
+    timeString(time),
   ], (error, stdout, stderr) => {
     if (error) throw error
     console.log(stdout)
-    if (ssl() && stdout[0] == "T") {
-      url = `${config.imageHosting}prediction_${date.format(time, 'YYYYMMDDHHmm').toString()}.png`,
+    if (ssl() && 'T' == stdout[0]) {
+      url = `${config.imageHosting}/prediction_${timeString(time)}.png`,
       getSubscribedUsers().then((users) => {for (const user of users) {
         callsendAPI('NON_PROMOTIONAL_SUBSCRIPTION', user.user_id, {
-          //first parameter is message type which fb asks developers to add
+          // first parameter is message type which fb asks developers to add
           "attchment":{
             "type":"image",
             "payload":{

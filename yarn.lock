@@ -92,10 +92,6 @@ block-stream@*:
   dependencies:
     inherits "~2.0.0"
 
-bluebird@^3.5.0:
-  version "3.5.1"
-  resolved "https://registry.yarnpkg.com/bluebird/-/bluebird-3.5.1.tgz#d9551f9de98f1fcda1e683d17ee91a0602ee2eb9"
-
 body-parser@1.18.2, body-parser@^1.18.2:
   version "1.18.2"
   resolved "https://registry.yarnpkg.com/body-parser/-/body-parser-1.18.2.tgz#87678a19d84b47d859b83199bd59bce222b10454"
@@ -730,12 +726,6 @@ proxy-addr@~2.0.2:
 punycode@^1.4.1:
   version "1.4.1"
   resolved "https://registry.yarnpkg.com/punycode/-/punycode-1.4.1.tgz#c0d5a63b2718800ad8e1eb0fa5269c84dd41845e"
-
-python-bridge@^1.0.3:
-  version "1.0.3"
-  resolved "https://registry.yarnpkg.com/python-bridge/-/python-bridge-1.0.3.tgz#7afab3f46da1e73f783bea5286de174c4d3eef48"
-  dependencies:
-    bluebird "^3.5.0"
 
 qs@6.5.1, qs@~6.5.1:
   version "6.5.1"
