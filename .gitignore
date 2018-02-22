@@ -1,8 +1,8 @@
 *bugfix*
 config.json
 cwb/
+pub/
 *.db*
-dev/
 fetch/
 image/
 node_modules/

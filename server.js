@@ -14,7 +14,7 @@ const app = express()
 
 app.use(bodyParser.urlencoded({ extended: false }))
 app.use(bodyParser.json())
-app.use(express.static(__dirname + '/tmp')) //! put into config.json
+app.use(express.static(__dirname + config.path_save)) //! put into config.json
 
 // ssl certifacate
 if (config.ssl) {
@@ -33,7 +33,7 @@ if (config.ssl) {
 }
 
 ;(async () => { // fetch cwb images
-
+//why there is no return befor Promise?
   const fetchImage = (time, verbose=false) => new Promise((resolve, reject) => { // {{{
     const fname = `CV1_3600_${dateAndTime.format(time, 'YYYYMMDDHHmm')}.png`
     const path = `${config.cwbPath}/${fname}`
@@ -59,7 +59,7 @@ if (config.ssl) {
 
   const fetchService = async () => { // {{{
     try {
-      await fetchImage(time)
+      await fetchImage(time).then(analysis(time))
       console.log(`${dateAndTime.format(time, 'YYYYMMDDHHmm')} successed, next image in ${config.cwbSuccessTimeout / 60000} minute`)
       time = dateAndTime.addMinutes(time, 10)
       setTimeout(fetchService, config.cwbSuccessTimeout)
@@ -75,29 +75,28 @@ if (config.ssl) {
   time = dateAndTime.addMinutes(time, -10)
   fetchService()
 })()
-
-// function analyze() {
-//   execFile('python3', [
-//     `rain.py`,
-//     `${date.format(date.addMinutes(time, -10), 'YYYYMMDDHHmm').toString()}`,
-//     `${date.format(time, 'YYYYMMDDHHmm').toString()}`,
-//     `1675`,`1475`
-//   ], (error, stdout, stderr) => {
-//     if (error) {
-//       throw error
-//     }
-//
-//     console.log(stdout)
-//     if (ssl()) {
-//       if (stdout[0] == "T") {
-//         let output = stdout.split('@')
-//         let filename = output[1]
-//         getSubscribedUsers().then((users) => {
-//           for (const user of users) {
-//             sendPhotoMessage(user.user_id, config.imageHosting + filename)
-//           }
-//         })
-//       }
-//     }
-//   })
-// }
+//!TODO promisify analysis
+function analysis(time) {
+  execFile('python3', [
+    `rain.py`,
+    `${date.format(date.addMinutes(time, -10), 'YYYYMMDDHHmm').toString()}`,
+    `${date.format(time, 'YYYYMMDDHHmm').toString()}`,
+  ], (error, stdout, stderr) => {
+    if (error) throw error
+    console.log(stdout)
+    if (ssl() && stdout[0] == "T") {
+      url = `${config.imageHosting}prediction_${date.format(time, 'YYYYMMDDHHmm').toString()}.png`,
+      getSubscribedUsers().then((users) => {for (const user of users) {
+        callsendAPI('NON_PROMOTIONAL_SUBSCRIPTION', user.user_id, {
+          "attchment":{
+            "type":"image",
+            "payload":{
+              "url":url,
+              "is_reusable":true
+            }
+          }
+        })
+      }})
+    }
+  })
+}

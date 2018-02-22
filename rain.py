@@ -12,7 +12,7 @@ with open('config.json', 'r') as data_file:
 arrow_path = './image/arrow.png'
 character_path = './image/character.png'
 font_path = './zh.ttf'
-output_path = './tmp/'
+output_path = config['path_save']
 
 def arrow_angle(wd): # {{{ wd: wind direction
     if 0 == wd[0]:
