@@ -64,7 +64,7 @@ if (config.ssl) {
       time = dateAndTime.addMinutes(time, 10)
       setTimeout(fetchService, config.cwbSuccessTimeout)
     } catch(e) {
-      console.log(`${dateAndTime.format(time, 'YYYYMMDDHHmm')} failed, retry in ${config.cwbFailTimeout} minute`)
+      console.log(`${dateAndTime.format(time, 'YYYYMMDDHHmm')} failed, retry in ${config.cwbFailTimeout / 60000} minute`)
       setTimeout(fetchService, config.cwbFailTimeout)
     }
   } // }}}
@@ -88,6 +88,7 @@ function analysis(time) {
       url = `${config.imageHosting}prediction_${date.format(time, 'YYYYMMDDHHmm').toString()}.png`,
       getSubscribedUsers().then((users) => {for (const user of users) {
         callsendAPI('NON_PROMOTIONAL_SUBSCRIPTION', user.user_id, {
+          //first parameter is message type which fb asks developers to add
           "attchment":{
             "type":"image",
             "payload":{
