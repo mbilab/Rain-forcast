@@ -61,8 +61,9 @@ const timeString = (time, minutes=0) => dateAndTime.format(dateAndTime.addMinute
 
   const fetchService = async () => { // {{{
     try {
-      await fetchImage(time).then(() => analysis(time))
+      await fetchImage(time)
       console.log(`${timeString(time)} successed, next image in ${config.cwbSuccessTimeout / 60000} minute`)
+      analysis(time)
       //! analyze here, no .then() syntax is needed
       time = dateAndTime.addMinutes(time, 10)
       setTimeout(fetchService, config.cwbSuccessTimeout)
@@ -74,8 +75,7 @@ const timeString = (time, minutes=0) => dateAndTime.format(dateAndTime.addMinute
 
   let time = new Date()
   time = dateAndTime.addMinutes(time, -parseInt(dateAndTime.format(time, 'mm')) % 10)
-  await fetchImage(dateAndTime.addMinutes(time, -20), true)
-  time = dateAndTime.addMinutes(time, -10)
+  await fetchImage(dateAndTime.addMinutes(time, -10), true)
   fetchService()
 })()
 
@@ -87,10 +87,10 @@ function analysis(time) {
   ], (error, stdout, stderr) => {
     if (error) throw error
     console.log(stdout)
-    if (ssl() && 'T' == stdout[0]) {
+    if (config.ssl && 'T' == stdout[0]) {
       url = `${config.imageHosting}/prediction_${timeString(time)}.png`,
-      getSubscribedUsers().then((users) => {for (const user of users) {
-        callsendAPI('NON_PROMOTIONAL_SUBSCRIPTION', user.user_id, {
+      fb.getSubscribedUsers().then((users) => {for (const user of users) {
+        fb.callsendAPI('NON_PROMOTIONAL_SUBSCRIPTION', user.user_id, {
           // first parameter is message type which fb asks developers to add
           "attchment":{
             "type":"image",

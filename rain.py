@@ -133,7 +133,7 @@ if '__main__' == __name__:
         exit()
 
     area = (args.x - args.radius, args.y - args.radius, args.x + args.radius, args.y + args.radius)
-    images = [Image.open('image/CV1_3600_%s.png' % v).crop(area) for v in args.images]
+    images = [Image.open(config['cwbPath'] + '/CV1_3600_%s.png' % v).crop(area) for v in args.images]
     centroids = [centroid(v) for v in images]
 
     if [0, 0] == centroids[-1]:
