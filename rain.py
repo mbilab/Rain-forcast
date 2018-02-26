@@ -8,12 +8,6 @@ from PIL import Image, ImageDraw, ImageFont
 with open('config.json', 'r') as data_file:
     config = json.load(data_file)
 
-# constant setup
-arrow_path = './image/arrow.png'
-character_path = './image/character.png'
-font_path = './zh.ttf'
-output_path = config['path_save']
-
 def arrow_angle(wd): # {{{ wd: wind direction
     if 0 == wd[0]:
         if wd[1] > 0:
@@ -64,15 +58,14 @@ def color_weight(color): # {{{
 # }}}
 
 def draw(last_image, wd, path): # {{{ wd: window direction
-    #! since there are so many constants, do we need character_path, character_size... ?
-    character = Image.open(character_path).resize((53, 86))
-    font = ImageFont.truetype(font_path, 30)
+    character = Image.open('./image/character.png').resize((53, 86)) #! move to res/
+    font = ImageFont.truetype('./zh.ttf', 30) #! res/
     last_image.paste(character, (123, 90), mask=character)
     image = Image.new('RGB', (400, 400), (50, 130, 230))
     angle = arrow_angle(wd)
     if angle >= 0:
         ImageDraw.Draw(image).text((30, 335), '雲飄來了，要下雨了喔~', font=font)
-        arrow = Image.open(arrow_path).resize((100, 100)).rotate(-90).rotate(math.degrees(angle))
+        arrow = Image.open('./image/arrow.png').resize((100, 100)).rotate(-90).rotate(math.degrees(angle)) #! res/
         last_image.paste(arrow, arrow_positoin(last_image, angle), mask=arrow)
     else: # new rain: rain in the last image without wind
         ImageDraw.Draw(image).text((30, 335), '雲系發展中，要下雨了喔~', font=font)
@@ -146,6 +139,6 @@ if '__main__' == __name__:
         if rain_at(images[-1], *center):
             # (args.x, args.y) will rain in 10 minutes
             print(True)
-            draw(images[-1], wd, '%s/prediction_%s.png' % (output_path, args.images[1]))
+            draw(images[-1], wd, '%s/prediction_%s.png' % (config['tmpPath'], args.images[1])) #! solve 'prediction_'
         else:
             print(False)
