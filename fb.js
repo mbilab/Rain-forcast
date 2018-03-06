@@ -2,7 +2,7 @@ const sqlite3 = require('sqlite3').verbose()
 const db = new sqlite3.Database('weather.db')
 const reply = require('./reply.json')
 const request = require('request')
-const config = require('./config')
+const config = require('./configtest')
 
 const self = module.exports = {
   webhook_get : function(req, res) {
