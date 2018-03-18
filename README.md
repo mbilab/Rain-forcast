@@ -13,6 +13,8 @@ Rain-forcast is a messenger  chatbot tells you when to rain.
 ## Run Forecast
 
 ### Setup
+* !!!!there are bugs in fb.js!!!!
+** I will use no more messenger paltform.I don't my service is a part of GREED FB service.
 * put your key & crt of ssl into your project
 * `cp config.sample.json config.json` and write down your configuration
 * `mkdir fetch result`we put image downloaded in fetch and `result` of rain.py in `reslt`
